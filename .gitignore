@@ -1,0 +1,5 @@
+.nextflow*
+results/
+work/
+input/BB_imputed_data/
+.DS_Store

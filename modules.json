@@ -1,0 +1,20 @@
+{
+    "name": "nextflow-example",
+    "homePage": "https://github.com/marc-jones/nextflow-example",
+    "repos": {
+        "nf-core/modules": {
+            "bowtie2/align": {
+                "git_sha": "cbc47767f7bb4751a9d178395bd66f051401a0c1"
+            },
+            "fastqc": {
+                "git_sha": "9d0cad583b9a71a6509b754fdf589cbfbed08961"
+            },
+            "plink/extract": {
+                "git_sha": "e745e167c1020928ef20ea1397b6b4d230681b4d"
+            },
+            "plink2/extract": {
+                "git_sha": "4ab098733a8f7df71e6b83af2893f3e6aa3a7bfc"
+            }
+        }
+    }
+}
