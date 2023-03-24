@@ -148,23 +148,24 @@ workflow UKBB_OR_develop {
 
         //out tuple val(meta), path ("*_ORs_PLINK2_logistic_firth_fallback_covar_recessive.PHENO1.glm.logistic.hybrid"), path ("*_ORs_PLINK2_logistic_firth_fallback_covar_standard.PHENO1.glm.logistic.hybrid"), emit: associations
         )
-        PLINK2_ASSOC_GLM.out.associations // ORs [SCZ, /rds/general/ephemeral/user/eosimo/ephemeral/UKBB_OR_develop/work/ed/61a5a66ddb71ab22a2c860a368b432/SCZ_ORs_PLINK2_logistic_firth_fallback_covar_recessive.PHENO1.glm.logistic.hybrid, /rds/general/ephemeral/user/eosimo/ephemeral/UKBB_OR_develop/work/ed/61a5a66ddb71ab22a2c860a368b432/SCZ_ORs_PLINK2_logistic_firth_fallback_covar_standard.PHENO1.glm.logistic.hybrid]
-            .join(GENERATESNPLISTS.out.processed_ENH_SNP_lists_hg19.map{it->[it[0],it[4]]}, by: [0])//join ENH hg19 csv file
-            .join(full_GWAS_hg19, by: [0]) //join full GWAS by condition
-            .view()
+        // PLINK2_ASSOC_GLM.out.associations // ORs [SCZ, /rds/general/ephemeral/user/eosimo/ephemeral/UKBB_OR_develop/work/ed/61a5a66ddb71ab22a2c860a368b432/SCZ_ORs_PLINK2_logistic_firth_fallback_covar_recessive.PHENO1.glm.logistic.hybrid, /rds/general/ephemeral/user/eosimo/ephemeral/UKBB_OR_develop/work/ed/61a5a66ddb71ab22a2c860a368b432/SCZ_ORs_PLINK2_logistic_firth_fallback_covar_standard.PHENO1.glm.logistic.hybrid]
+        //     .join(GENERATESNPLISTS.out.processed_ENH_SNP_lists_hg19.map{it->[it[0],it[4]]}, by: [0])//join ENH hg19 csv file
+        //     .join(full_GWAS_hg19, by: [0]) //join full GWAS by condition
+        //     .view() //[SCZ, /rds/general/ephemeral/user/eosimo/ephemeral/UKBB_OR_develop/work/ed/61a5a66ddb71ab22a2c860a368b432/SCZ_ORs_PLINK2_logistic_firth_fallback_covar_recessive.PHENO1.glm.logistic.hybrid, /rds/general/ephemeral/user/eosimo/ephemeral/UKBB_OR_develop/work/ed/61a5a66ddb71ab22a2c860a368b432/SCZ_ORs_PLINK2_logistic_firth_fallback_covar_standard.PHENO1.glm.logistic.hybrid, /rds/general/ephemeral/user/eosimo/ephemeral/UKBB_OR_develop/work/4e/fc02bef580148888c104f3ea7c06ed/ENH_SCZ_hg19.csv, /rds/general/user/eosimo/home/largedirs/scz_GWAS/PGC3_SCZ_wave3.european.autosome.public.v3_HCM_format.tsv.gz]
     
-    // R_ANNOTATE_ORs(
-    //     // annotate ORs from previous step with GWAS results and other info,
-    //     //produce OR plots
-    //     PLINK2_ASSOC_GLM.out.associations // ORs
-    //         .join(GENERATESNPLISTS.out.processed_ENH_SNP_lists_hg19.map{it->[it[0],it[4]]}, by: [0])//join ENH hg19 csv file
-    //         .join(full_GWAS_hg19, by: [0]), //join full GWAS by condition
+    R_ANNOTATE_ORs(
+        // annotate ORs from previous step with GWAS results and other info,
+        //produce OR plots
+        PLINK2_ASSOC_GLM.out.associations // ORs
+            .join(GENERATESNPLISTS.out.processed_ENH_SNP_lists_hg19.map{it->[it[0],it[4]]}, by: [0])//join ENH hg19 csv file
+            .join(full_GWAS_hg19, by: [0]), //join full GWAS by condition
      
-    //     hg38ToHg19_chain,
-    //     GW_LD_blocks
+        hg38ToHg19_chain,
+        GW_LD_blocks
         
-    //     // out: tuple val(meta), path("*_annotated_ORs.csv"),       emit: annotated_ORs
-    // )
+        // out: tuple val(meta), path("*_annotated_ORs.csv"),       emit: annotated_ORs
+    )
+    R_ANNOTATE_ORs.out.annotated_ORs.view()
     
     // PLINK2_QC_PRUNE_HET (
     //     PLINK_MERGE.out.all_chromosomes_extracted

@@ -7,6 +7,7 @@ process R_ANNOTATE_ORs {
     cache 'lenient'
 
     input:
+    //[SCZ, SCZ_ORs_PLINK2_logistic_firth_fallback_covar_recessive.PHENO1.glm.logistic.hybrid, SCZ_ORs_PLINK2_logistic_firth_fallback_covar_standard.PHENO1.glm.logistic.hybrid, ENH_SCZ_hg19.csv, /rds/general/user/eosimo/home/largedirs/scz_GWAS/PGC3_SCZ_wave3.european.autosome.public.v3_HCM_format.tsv.gz]
     tuple val(meta), path(associations_recessive),  path(associations_standardGLM),  path(processed_SNPlists_hg19), path(full_GWAS)
     each path(hg38ToHg19_chain)
     each path(GW_LD_blocks)
