@@ -12,7 +12,7 @@ process PLINK_MERGE {
 
     output:
     tuple val(meta), path ("*.bed"), path ("*.bim"), path ("*.fam"), path ("*.log") , emit: all_chromosomes_extracted
-    path "chr_file_list.txt"
+    path "chr_file_list.txt", emit: chrfilelist
 
 
 
