@@ -133,7 +133,7 @@ workflow UKBB_OR_develop {
         //out tuple val(meta), path ("*.bed"), path ("*.bim"), path ("*.fam"), path ("*.log") , emit: all_chromosomes_extracted
         )
     
-    // PLINK_MERGE.out.all_chromosomes_extracted.view()
+    // PLINK_MERGE.out.all_chromosomes_extracted.view() [SCZ, /rds/general/ephemeral/user/eosimo/ephemeral/UKBB_OR_develop/work/8c/41dfb0b869376a5314f9b4a404da3e/SCZ_mergedfile.bed, /rds/general/ephemeral/user/eosimo/ephemeral/UKBB_OR_develop/work/8c/41dfb0b869376a5314f9b4a404da3e/SCZ_mergedfile.bim, /rds/general/ephemeral/user/eosimo/ephemeral/UKBB_OR_develop/work/8c/41dfb0b869376a5314f9b4a404da3e/SCZ_mergedfile.fam, /rds/general/ephemeral/user/eosimo/ephemeral/UKBB_OR_develop/work/8c/41dfb0b869376a5314f9b4a404da3e/SCZ_mergedfile.log]
     // PLINK_MERGE.out.chrfilelist.view()
 
 
@@ -147,7 +147,10 @@ workflow UKBB_OR_develop {
 
         //out tuple val(meta), path ("*_ORs_PLINK2_logistic_firth_fallback_covar_recessive.PHENO1.glm.logistic.hybrid"), path ("*_ORs_PLINK2_logistic_firth_fallback_covar_standard.PHENO1.glm.logistic.hybrid"), emit: associations
         )
-    PLINK2_ASSOC_GLM.out.associations.view()
+        PLINK2_ASSOC_GLM.out.associations // ORs
+            .join(GENERATESNPLISTS.out.processed_ENH_SNP_lists_hg19.map{it->[it[0],it[4]]}, by: [0])//join ENH hg19 csv file
+            .join(full_GWAS_hg19, by: [0]), //join full GWAS by condition
+            .view()
     
     // R_ANNOTATE_ORs(
     //     // annotate ORs from previous step with GWAS results and other info,
