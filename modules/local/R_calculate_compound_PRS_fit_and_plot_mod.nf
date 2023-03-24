@@ -1,7 +1,6 @@
 process R_calculate_compound_PRS_fit_and_plot {
     // debug true
     container 'emosyne/r_docker:1.97'
-    stageInMode 'copy'
     label 'process_low'
     tag "$meta"
     cache 'lenient'
