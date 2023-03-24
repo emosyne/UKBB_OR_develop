@@ -25,7 +25,8 @@ enhancer_plus_GWAS_coords = Channel.from("SCZ") //,"HCM"
            file("./input/textfiles/ENH_${condition}_hg38.csv.gz", checkIfExists: true), 
            file("./input/textfiles/GWAS_${condition}_clumped_hg19.tsv.gz", checkIfExists: true), 
            file("./input/biobank/${condition}.pheno", checkIfExists: true)] } 
-           .view()
+        //    .view()
+
 
 
 //  SCHIZO and neural lists ##############
@@ -85,14 +86,14 @@ workflow UKBB_OR_develop {
         
 
 
-    // PLINK2_EXTRACT ( 
-    //     // extract genotypes at bed file locations
-    //     chromosomes_by_condition_plus_SNPs
+    PLINK2_EXTRACT ( 
+        // extract genotypes at bed file locations
+        chromosomes_by_condition_plus_SNPs
 
-    //     //out tuple val(meta), path("*.bim"), path("*.bed"), path ("*.fam"), path("*.log"), emit: SNPextracted_by_chromosome
-    //     )
+        //out tuple val(meta), path("*.bim"), path("*.bed"), path ("*.fam"), path("*.log"), emit: SNPextracted_by_chromosome
+        )
     
-    // // PLINK2_EXTRACT.out.SNPextracted_by_chromosome.view()
+    PLINK2_EXTRACT.out.SNPextracted_by_chromosome.view()
 
     // PLINK2_EXTRACT.out.SNPextracted_by_chromosome
     //     .branch{
