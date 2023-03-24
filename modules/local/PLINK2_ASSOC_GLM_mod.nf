@@ -4,7 +4,7 @@ process PLINK2_ASSOC_GLM {
     label 'process_high_memory'
     cache 'lenient'
     container 'emosyne/plink2:1.23'
-    errorStrategy 'ignore'
+    // errorStrategy 'ignore'
 
     input: 
     tuple val(meta), path (bedfilepath), path (bim), path (fam), path (log), path(SNVs_hg19), path(pheno)
@@ -13,25 +13,18 @@ process PLINK2_ASSOC_GLM {
 
     output:
     tuple val(meta), path ("*_ORs_PLINK2_logistic_firth_fallback_covar_recessive.PHENO1.glm.logistic.hybrid"), path ("*_ORs_PLINK2_logistic_firth_fallback_covar_standard.PHENO1.glm.logistic.hybrid"), emit: associations
-    path("*")
-    path "versions2.yml"           , emit: versions
+    path("*.snplist")
     
 
-    when:
-    task.ext.when == null || task.ext.when
-
+    
     script:
-    def args = task.ext.args
-    //def prefix = task.ext.prefix 
-    // if( "$PLINKbgenfiles" == "${prefix}.bgen" ) error "Input and output names are the same, use \"task.ext.prefix\" in modules.config to disambiguate!"
-    def mem_mb = task.memory.toMega()
+    def mem_mb = (task.memory * 0.95).toMega()
     """ 
     plink2 \\
         --threads $task.cpus \\
         --memory $mem_mb \\
         --bfile ${bedfilepath.baseName} \\
         --extract bed1 ${SNVs_hg19} \\
-        $args \\
         --chr 1-22 \\
         --write-snplist \\
         --glm recessive firth-fallback omit-ref hide-covar \\
@@ -49,7 +42,6 @@ process PLINK2_ASSOC_GLM {
         --memory $mem_mb \\
         --bfile ${bedfilepath.baseName} \\
         --extract bed1 ${SNVs_hg19} \\
-        $args \\
         --chr 1-22 \\
         --write-snplist \\
         --glm firth-fallback omit-ref hide-covar \\
@@ -63,10 +55,5 @@ process PLINK2_ASSOC_GLM {
             --out ${meta}_ORs_PLINK2_logistic_firth_fallback_covar_standard
       
 
-    cat <<-END_VERSIONS > versions2.yml
-    "${task.process}":
-        plink2: \$(plink2 --version 2>&1 | sed 's/^PLINK v//; s/ 64.*\$//' )
-    END_VERSIONS
     """
 }
-//         --pheno ${pheno} \\

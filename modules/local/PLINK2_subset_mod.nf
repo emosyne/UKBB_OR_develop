@@ -19,7 +19,7 @@ process PLINK2_SUBSET {
     def args = task.ext.args
     def prefix = task.ext.prefix 
     // if( "$PLINKbgenfiles" == "${prefix}.bgen" ) error "Input and output names are the same, use \"task.ext.prefix\" in modules.config to disambiguate!"
-    def mem_mb = task.memory.toMega()
+    def mem_mb = (task.memory * 0.95).toMega()
     """ 
     plink2 \\
         --threads $task.cpus \\

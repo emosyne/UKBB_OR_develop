@@ -26,7 +26,7 @@ process PRSice_calculate_PRS_original {
     script:
     def args = task.ext.args 
     def prefix = task.ext.prefix 
-    def mem_mb = task.memory.toMega()
+    def mem_mb = (task.memory * 0.95).toMega()
     """
     gunzip < ${UKBB_covariates} > covariates.pheno
     head covariates.pheno

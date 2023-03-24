@@ -133,21 +133,21 @@ workflow UKBB_OR_develop {
         //out tuple val(meta), path ("*.bed"), path ("*.bim"), path ("*.fam"), path ("*.log") , emit: all_chromosomes_extracted
         )
     
-    PLINK_MERGE.out.all_chromosomes_extracted.view()
-    PLINK_MERGE.out.chrfilelist.view()
+    // PLINK_MERGE.out.all_chromosomes_extracted.view()
+    // PLINK_MERGE.out.chrfilelist.view()
 
 
-    // PLINK2_ASSOC_GLM(
+    PLINK2_ASSOC_GLM(
 
-    //     PLINK_MERGE.out.all_chromosomes_extracted
-    //         //join will join all_chromosomes_extracted with the SNP list output from step 1 by condition (meta)
-    //         .join(GENERATESNPLISTS.out.processed_ENH_SNP_lists_hg19.map{it->[it[0],it[2]]}, by: [0])//join ENH hg19 bed file
-    //         .join(enhancer_plus_GWAS_coords.map{it->[it[0],it[3]]}, by: [0]), // also join pheno file
-    //     UKBB_covariates 
+        PLINK_MERGE.out.all_chromosomes_extracted
+            //join will join all_chromosomes_extracted with the SNP list output from step 1 by condition (meta)
+            .join(GENERATESNPLISTS.out.processed_ENH_SNP_lists_hg19.map{it->[it[0],it[2]]}, by: [0])//join ENH hg19 bed file
+            .join(enhancer_plus_GWAS_coords.map{it->[it[0],it[3]]}, by: [0]), // also join pheno file
+        UKBB_covariates 
 
-    //     //out tuple val(meta), path ("*_ORs_PLINK2_logistic_firth_fallback_covar_recessive.PHENO1.glm.logistic.hybrid"), path ("*_ORs_PLINK2_logistic_firth_fallback_covar_standard.PHENO1.glm.logistic.hybrid"), emit: associations
-    //     )
-
+        //out tuple val(meta), path ("*_ORs_PLINK2_logistic_firth_fallback_covar_recessive.PHENO1.glm.logistic.hybrid"), path ("*_ORs_PLINK2_logistic_firth_fallback_covar_standard.PHENO1.glm.logistic.hybrid"), emit: associations
+        )
+    PLINK2_ASSOC_GLM.out.associations.view()
     
     // R_ANNOTATE_ORs(
     //     // annotate ORs from previous step with GWAS results and other info,
