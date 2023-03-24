@@ -82,7 +82,7 @@ workflow UKBB_OR_develop {
     chromosomes_by_condition_plus_SNPs = 
         GENERATESNPLISTS.out.processed_ENH_SNP_lists_hg19
             .combine(genotype_chr_files) //The combine operator combines (cartesian product) the items emitted by two channels
-            .view()
+            // .view()
         
 
 
@@ -93,34 +93,35 @@ workflow UKBB_OR_develop {
         //out tuple val(meta), path("*.bim"), path("*.bed"), path ("*.fam"), path("*.log"), emit: SNPextracted_by_chromosome
         )
     
-    PLINK2_EXTRACT.out.SNPextracted_by_chromosome.view()
+    // PLINK2_EXTRACT.out.SNPextracted_by_chromosome.view()
+    // [SCZ, GWAS_SCZ_SNV_merge_hg19_ukb22828_c17_b0_v3.bim, GWAS_SCZ_SNV_merge_hg19_ukb22828_c17_b0_v3.bed, GWAS_SCZ_SNV_merge_hg19_ukb22828_c17_b0_v3.fam, GWAS_SCZ_SNV_merge_hg19_ukb22828_c17_b0_v3.log]
 
-    // PLINK2_EXTRACT.out.SNPextracted_by_chromosome
-    //     .branch{
-    //         SCZ: it =~ /SCZ/
-    //         HCM: it =~ /HCM/
-    //     }
-    //     .set{ SNPextracted_by_chromosome_byMeta }
+    PLINK2_EXTRACT.out.SNPextracted_by_chromosome
+        .branch{
+            SCZ: it =~ /SCZ/
+            HCM: it =~ /HCM/
+        }
+        .set{ SNPextracted_by_chromosome_byMeta }
         
     
-    // //split channel by meta, collect all bed files per chr, and generate tuple
-    // bedfiles = Channel
-    //     .empty()
-    //     .mix(
-    //         SNPextracted_by_chromosome_byMeta.SCZ
-    //             .map{it-> it[2]}
-    //             .collect()
-    //             .map{it-> ["SCZ", it]}
-    //             // .view()
-    //             )
-    //     .mix(
-    //         SNPextracted_by_chromosome_byMeta.HCM
-    //             .map{it-> it[2]}
-    //             .collect()
-    //             .map{it-> ["HCM", it]}
-    //             // .view()
-    //     )
-    // // bedfiles.view()
+    //split channel by meta, collect all bed files per chr, and generate tuple
+    bedfiles = Channel
+        .empty()
+        .mix(
+            SNPextracted_by_chromosome_byMeta.SCZ
+                .map{it-> it[2]}
+                .collect()
+                .map{it-> ["SCZ", it]}
+                // .view()
+                )
+        .mix(
+            SNPextracted_by_chromosome_byMeta.HCM
+                .map{it-> it[2]}
+                .collect()
+                .map{it-> ["HCM", it]}
+                // .view()
+        )
+    bedfiles.view()
     
     
 

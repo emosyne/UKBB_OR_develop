@@ -1,7 +1,7 @@
 process PLINK_MERGE {
     // debug true
     tag "$meta"
-    label 'process_high_memory'
+    label 'vlarge'
     container 'emosyne/plink2:1.23'
     cache 'lenient'
 
@@ -13,18 +13,11 @@ process PLINK_MERGE {
     output:
     tuple val(meta), path ("*.bed"), path ("*.bim"), path ("*.fam"), path ("*.log") , emit: all_chromosomes_extracted
     path "chr_file_list.txt"
-    path "versions1.yml"           , emit: versions
 
 
-    when:
-    task.ext.when == null || task.ext.when
 
     script:
-    def args = task.ext.args 
-    def prefix = task.ext.prefix 
-    // def mem_mb = task.memory.toMega()
-
-    // if( "$bed" == "${prefix}.bed" ) error "Input and output names are the same, use \"task.ext.prefix\" to disambiguate!"
+    def mem_mb = (task.memory * 0.95).toMega()
     """
     # IMPORT LIST OF FILES INTO chr_file_list
     echo ${bedfiles} | \\
@@ -42,18 +35,11 @@ process PLINK_MERGE {
         --merge-list chr_file_list.txt \\
         --make-bed \\
         --remove $PLINKethinicityRelatedness \\
-        --maf 0.01 \\
-        --hwe 1e-6 \\
-        --geno 0.01 \\
-        --mac 100 \\
+        --maf 0.01 --mac 100 --geno 0.1 --hwe 1e-15 \\
         --threads $task.cpus \\
-        --out ${prefix}_${meta} 
+        --memory $mem_mb \\
+        --out ${meta}_mergedfile
 
-
-    cat <<-END_VERSIONS > versions1.yml
-    "${task.process}":
-        plink: \$(echo \$(plink --version) | sed 's/^PLINK v//;s/64.*//')
-    END_VERSIONS
     
     """
 }
