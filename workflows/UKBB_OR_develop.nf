@@ -76,12 +76,12 @@ workflow UKBB_OR_develop {
 
         //out tuple val(meta), path("GWAS_*_hg19.bed"), path("ENH_*_hg19.bed"), path(pheno), path("ENH_*_hg19.csv"), emit: processed_ENH_SNP_lists_hg19
         )
-    GENERATESNPLISTS.out.processed_ENH_SNP_lists_hg19.view()
+    // GENERATESNPLISTS.out.processed_ENH_SNP_lists_hg19.view()
     
-    // chromosomes_by_condition_plus_SNPs = 
-    //     GENERATESNPLISTS.out.processed_ENH_SNP_lists_hg19
-    //         .combine(genotype_chr_files) //The combine operator combines (cartesian product) the items emitted by two channels
-    //         // .view()
+    chromosomes_by_condition_plus_SNPs = 
+        GENERATESNPLISTS.out.processed_ENH_SNP_lists_hg19
+            .combine(genotype_chr_files) //The combine operator combines (cartesian product) the items emitted by two channels
+            .view()
         
 
 
