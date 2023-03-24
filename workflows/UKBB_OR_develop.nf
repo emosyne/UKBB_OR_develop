@@ -32,6 +32,7 @@ enhancer_plus_GWAS_coords = Channel.from("SCZ") //,"HCM"
 //  SCHIZO and neural lists ##############
 full_GWAS_hg19 = Channel
     .fromPath("$GWAS_dir/PGC3_SCZ_wave3.european.autosome.public.v3_HCM_format.tsv.gz", checkIfExists: true) 
+    .map{it-> ["SCZ", it]}
 
 
 
@@ -147,7 +148,6 @@ workflow UKBB_OR_develop {
 
         //out tuple val(meta), path ("*_ORs_PLINK2_logistic_firth_fallback_covar_recessive.PHENO1.glm.logistic.hybrid"), path ("*_ORs_PLINK2_logistic_firth_fallback_covar_standard.PHENO1.glm.logistic.hybrid"), emit: associations
         )
-        GENERATESNPLISTS.out.processed_ENH_SNP_lists_hg19.view()
         PLINK2_ASSOC_GLM.out.associations // ORs [SCZ, /rds/general/ephemeral/user/eosimo/ephemeral/UKBB_OR_develop/work/ed/61a5a66ddb71ab22a2c860a368b432/SCZ_ORs_PLINK2_logistic_firth_fallback_covar_recessive.PHENO1.glm.logistic.hybrid, /rds/general/ephemeral/user/eosimo/ephemeral/UKBB_OR_develop/work/ed/61a5a66ddb71ab22a2c860a368b432/SCZ_ORs_PLINK2_logistic_firth_fallback_covar_standard.PHENO1.glm.logistic.hybrid]
             .join(GENERATESNPLISTS.out.processed_ENH_SNP_lists_hg19.map{it->[it[0],it[4]]}, by: [0])//join ENH hg19 csv file
             .join(full_GWAS_hg19, by: [0]) //join full GWAS by condition
