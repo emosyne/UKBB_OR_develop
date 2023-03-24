@@ -167,45 +167,45 @@ workflow UKBB_OR_develop {
     )
     R_ANNOTATE_ORs.out.annotated_ORs.view()
     
-    // PLINK2_QC_PRUNE_HET (
-    //     PLINK_MERGE.out.all_chromosomes_extracted
+    PLINK2_QC_PRUNE_HET (
+        PLINK_MERGE.out.all_chromosomes_extracted
         
-    //     //out tuple val(meta), path ("*.prune.in"), path ("*.het"), emit: pruned_variants_het
-    // )
-    // R_PRS_QC (
-    //     PLINK2_QC_PRUNE_HET.out.pruned_variants_het         //het file
-    //         .join(PLINK_MERGE.out.all_chromosomes_extracted, by: [0]) //join merged genotype files
-    //         .join(full_GWAS_hg19, by: [0])                       //join full GWAS by condition
+        //out tuple val(meta), path ("*.prune.in"), path ("*.het"), emit: pruned_variants_het
+    )
+    R_PRS_QC (
+        PLINK2_QC_PRUNE_HET.out.pruned_variants_het         //het file
+            .join(PLINK_MERGE.out.all_chromosomes_extracted, by: [0]) //join merged genotype files
+            .join(full_GWAS_hg19, by: [0])                       //join full GWAS by condition
         
-    //     //out tuple val(meta), path ("*_het_valid_out.sample"), path("*_a1_bim"), path("*_mismatching_SNPs"),  emit: QC_het_a1_mismatch
-    // )
+        //out tuple val(meta), path ("*_het_valid_out.sample"), path("*_a1_bim"), path("*_mismatching_SNPs"),  emit: QC_het_a1_mismatch
+    )
 
-    // PLINK_PRODUCE_QC_DATASET (
-    //     PLINK_MERGE.out.all_chromosomes_extracted
-    //         .join(R_PRS_QC.out.QC_het_a1_mismatch, by: [0]) //join het, A1 bim, mismatching SNPs from previous step
-    //         // .view()
-    //     //out tuple val(meta), path ("*.bed"), path ("*.bim"), path ("*.fam"), path ("*.log") , emit: all_chromosomes_QC
-    // )
+    PLINK_PRODUCE_QC_DATASET (
+        PLINK_MERGE.out.all_chromosomes_extracted
+            .join(R_PRS_QC.out.QC_het_a1_mismatch, by: [0]) //join het, A1 bim, mismatching SNPs from previous step
+            // .view()
+        //out tuple val(meta), path ("*.bed"), path ("*.bim"), path ("*.fam"), path ("*.log") , emit: all_chromosomes_QC
+    )
 
-    // R_PREPARE_MODIF_PRS (
-    //     full_GWAS_hg19                                      // full GWAS by condition
-    //         .join(R_ANNOTATE_ORs.out.annotated_ORs, by: [0]),// *_annotated_ORs.csv
-    //     // GW_LD_blocks
-    //     // out tuple val(meta),  path("*_original_dedup_GWAS.tsv"), path("*_substituted_GWAS.tsv"), path("*_tissue_EPeQTL_associations.tsv"), path("*_tissue_facet_associations.tsv"), path("*_all_TS_EPs_associations.tsv"), path("*_merged_GWAS.tsv"), path("*_all_TS_EPs_ZEROP_associations.tsv"), emit: orig_and_modified_GWASes
-    // )
+    R_PREPARE_MODIF_PRS (
+        full_GWAS_hg19                                      // full GWAS by condition
+            .join(R_ANNOTATE_ORs.out.annotated_ORs, by: [0]),// *_annotated_ORs.csv
+        // GW_LD_blocks
+        // out tuple val(meta),  path("*_original_dedup_GWAS.tsv"), path("*_substituted_GWAS.tsv"), path("*_tissue_EPeQTL_associations.tsv"), path("*_tissue_facet_associations.tsv"), path("*_all_TS_EPs_associations.tsv"), path("*_merged_GWAS.tsv"), path("*_all_TS_EPs_ZEROP_associations.tsv"), emit: orig_and_modified_GWASes
+    )
 
-    // PLINK_clump (
-    //     //tuple val(meta),  path("*_original_dedup_GWAS.tsv"), path("*_substituted_GWAS.tsv"), path("*_tissue_EPeQTL_associations.tsv"), path("*_tissue_facet_associations.tsv"), path("*_all_TS_EPs_associations.tsv"), path("*_merged_GWAS.tsv"), path("*_all_TS_EPs_ZEROP_associations.tsv"), emit: orig_and_modified_GWASes
-    //     R_PREPARE_MODIF_PRS.out.orig_and_modified_GWASes    // merged_GWAS for clumping
-    //         .join(LD_reference2, by: [0])                   //bed bim fam 1000 genomes ref files by DX
+    PLINK_clump (
+        //tuple val(meta),  path("*_original_dedup_GWAS.tsv"), path("*_substituted_GWAS.tsv"), path("*_tissue_EPeQTL_associations.tsv"), path("*_tissue_facet_associations.tsv"), path("*_all_TS_EPs_associations.tsv"), path("*_merged_GWAS.tsv"), path("*_all_TS_EPs_ZEROP_associations.tsv"), emit: orig_and_modified_GWASes
+        R_PREPARE_MODIF_PRS.out.orig_and_modified_GWASes    // merged_GWAS for clumping
+            .join(LD_reference2, by: [0])                   //bed bim fam 1000 genomes ref files by DX
         
-    // )
+    )
 
-    // R_PREPARE_MODIF_PRS_2_LISTS (
-    //     PLINK_clump.out.clumped_SNPs 
-    //         .join(R_PREPARE_MODIF_PRS.out.orig_and_modified_GWASes, by: [0])
-    //     //out tuple val(meta),  path("*_original_NoEPs_associations_clumped.tsv"), path("*_NonOverlapOriginal_TS_EPs_associations_clumped.tsv"), emit: split_GWASes
-    // )
+    R_PREPARE_MODIF_PRS_2_LISTS (
+        PLINK_clump.out.clumped_SNPs 
+            .join(R_PREPARE_MODIF_PRS.out.orig_and_modified_GWASes, by: [0])
+        //out tuple val(meta),  path("*_original_NoEPs_associations_clumped.tsv"), path("*_NonOverlapOriginal_TS_EPs_associations_clumped.tsv"), emit: split_GWASes
+    )
 
     
     // PRSice_calculate_PRS_original(
