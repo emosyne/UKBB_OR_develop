@@ -68,15 +68,15 @@ LD_reference = Channel.from("bed","bim","fam")
 
 
 workflow UKBB_OR_develop {
-    // GENERATESNPLISTS( 
-    //     // THIS MODULE IMPORTS E-PS LIST (hg38) AND GWAS results (hg19), converts them to hg 19 and merges them
-    //     // outputting bed files
-    //     enhancer_plus_GWAS_coords, 
-    //     hg38ToHg19_chain
+    GENERATESNPLISTS( 
+        // THIS MODULE IMPORTS E-PS LIST (hg38) AND GWAS results (hg19), converts them to hg 19 and merges them
+        // outputting bed files
+        enhancer_plus_GWAS_coords, 
+        hg38ToHg19_chain
 
-    //     //out tuple val(meta), path("GWAS_*_hg19.bed"), path("ENH_*_hg19.bed"), path(pheno), path("ENH_*_hg19.csv"), emit: processed_ENH_SNP_lists_hg19
-    //     )
-
+        //out tuple val(meta), path("GWAS_*_hg19.bed"), path("ENH_*_hg19.bed"), path(pheno), path("ENH_*_hg19.csv"), emit: processed_ENH_SNP_lists_hg19
+        )
+    GENERATESNPLISTS.out.processed_ENH_SNP_lists_hg19.view()
     
     // chromosomes_by_condition_plus_SNPs = 
     //     GENERATESNPLISTS.out.processed_ENH_SNP_lists_hg19
