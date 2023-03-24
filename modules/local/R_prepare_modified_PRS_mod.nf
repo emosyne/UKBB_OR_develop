@@ -1,6 +1,6 @@
 process R_PREPARE_MODIF_PRS {
     // debug true
-    container 'emosyne/r_docker:1.7'
+    container 'emosyne/r_docker:1.97'
     stageInMode 'copy'
     // label 'process_low'
     tag "$meta"

@@ -2,7 +2,7 @@ process PLINK_PRODUCE_QC_DATASET {
     // debug true
     tag "$meta"
     label 'process_high_memory'
-    container 'emosyne/plink2:1.2'
+    container 'emosyne/plink2:1.23'
     cache 'lenient'
 
 

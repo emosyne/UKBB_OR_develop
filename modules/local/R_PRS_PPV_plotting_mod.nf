@@ -1,6 +1,6 @@
 process R_PRS_PPV_plotting {
     // debug true
-    container 'emosyne/r_docker:1.7'
+    container 'emosyne/r_docker:1.97'
     stageInMode 'copy'
     label 'process_low'
     tag "$meta"

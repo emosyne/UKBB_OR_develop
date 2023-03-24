@@ -2,7 +2,6 @@ include { GENERATESNPLISTS }                from '../modules/local/R_GENERATESNP
 include { PLINK2_EXTRACT }                  from '../modules/local/PLINK2_extract_mod.nf'
 include { PLINK_MERGE }                     from '../modules/local/plink_mergechromfiles_mod.nf'
 include { PLINK2_ASSOC_GLM }                from '../modules/local/PLINK2_ASSOC_GLM_mod.nf'
-include { VERSIONSHTML }                    from '../modules/local/versionshtml_mod.nf'
 include { R_ANNOTATE_ORs }                  from '../modules/local/R_ANNOTATE_ORs_mod.nf'
 include { PLINK2_QC_PRUNE_HET }             from '../modules/local/PLINK2_QC_PRUNE_HET_mod.nf'
 include { R_PRS_QC }                        from '../modules/local/R_PRS_QC_mod.nf'
@@ -19,21 +18,9 @@ include { R_calculate_compound_PRS_fit_and_plot }   from '../modules/local/R_cal
 include { R_plot_GO }                       from '../modules/local/R_plot_GO.nf'
 
 
-conditions = Channel.from("SCZ","HCM")
-EP_lists = Channel.from("EP_neural_facet", "EP_cardiac_myocyte_facet",
-            "EP_BRAIN_eQTL", "EP_HEART_eQTL",
-            "EP_NEGATIVE")
 
-conditions
-    .combine(EP_lists)
-    .map { condition -> ["${condition}", 
-           file("./input/textfiles/ENH_${condition}_hg38.csv.gz", checkIfExists: true), 
-           file("./input/textfiles/GWAS_${condition}_clumped_hg19.tsv.gz", checkIfExists: true), 
-           file("./input/biobank/${condition}.pheno", checkIfExists: true)] } 
-           .view()
-    .view()
 
-enhancer_plus_GWAS_coords = Channel.from("SCZ","HCM") 
+enhancer_plus_GWAS_coords = Channel.from("SCZ") //,"HCM"
     .map { condition -> ["${condition}", 
            file("./input/textfiles/ENH_${condition}_hg38.csv.gz", checkIfExists: true), 
            file("./input/textfiles/GWAS_${condition}_clumped_hg19.tsv.gz", checkIfExists: true), 
@@ -41,9 +28,10 @@ enhancer_plus_GWAS_coords = Channel.from("SCZ","HCM")
            .view()
 
 
-full_GWAS_hg19 = Channel.from("SCZ","HCM") 
-    .map { condition -> ["${condition}", 
-           file("http://data.genereg.net/emanuele/GWAS_PGC_summary/fullGWAS_${condition}*_hg19.tsv.gz", checkIfExists: true)] } 
+//  SCHIZO and neural lists ##############
+full_GWAS_hg19 = Channel
+    .fromPath("$GWAS_dir/PGC3_SCZ_wave3.european.autosome.public.v3_HCM_format.tsv.gz", checkIfExists: true) 
+
 
 
 // chain file
@@ -54,179 +42,189 @@ GW_LD_blocks = Channel
     .fromPath( "./input/LD/EUR_phase3_autosomes_hg19.blocks.det.gz", checkIfExists: true)
 
 // #### UKBB PLINK input files ####
-if(workflow.profile == "mamut") {
-    genotype_chr_files = Channel
-    .fromFilePairs("$geno_input_dir/c*_b0_v3.{bgen,sample}", flat: true, checkIfExists: true)
-    //also enable relatedness in plink merge module before deployment
+genotype_chr_files = Channel
+    .fromFilePairs("$geno_input_dir/*c*_b0*.{bgen,sample}", flat: true, checkIfExists: true)
     .map{ it-> [it[1],it[2]] }
-} else {
-    genotype_chr_files = Channel
-    .fromFilePairs("$geno_input_dir/c*_b0_testsubsample.{bgen,sample}", flat: true, checkIfExists: true)
-    //also enable relatedness in plink merge module before deployment
-    .map{ it-> [it[1],it[2]] }
-}
+
 
 
 UKBBethinicityRelatedness = Channel.fromPath( './input/biobank/EIDs_nonBritIrish_includingsecondary_or_related_over_king125.tsv' , checkIfExists: true)
 UKBB_covariates = Channel.fromPath( './input/biobank/non_missing_10PCs_Jun22.covariate.gz', checkIfExists: true)
 UKBB_rs34380086_cases = Channel.fromPath( './input/biobank/rs34380086_cases.pheno', checkIfExists: true)
+// LD_reference = Channel.from("bed","bim","fam") 
+//     .map { ext -> ["${ext}", 
+//             file("/mnt/storage/emanuele/LDblocks/1000genomes/EUR_phase3_autosomes_hg19.${ext}")] }
+//             .collect()
+// LD_reference2 = Channel
+//         .empty()
+//         .mix(LD_reference.map{it-> ["SCZ", it[1],it[3],it[5]]})
+//         .mix(LD_reference.map{it-> ["HCM", it[1],it[3],it[5]]})
+
+//LD ref
 LD_reference = Channel.from("bed","bim","fam") 
-    .map { ext -> ["${ext}", 
-            file("/mnt/storage/emanuele/LDblocks/1000genomes/EUR_phase3_autosomes_hg19.${ext}")] }
-            .collect()
-LD_reference2 = Channel
-        .empty()
-        .mix(LD_reference.map{it-> ["SCZ", it[1],it[3],it[5]]})
-        .mix(LD_reference.map{it-> ["HCM", it[1],it[3],it[5]]})
+    .map { ext -> [file("$ld_ref_dir/EUR_phase3_autosomes_hg19.${ext}")] }
+            .collect().map{it-> ["SCZ", it[1],it[3],it[5]]}
 
 
 
 workflow UKBB_OR_develop {
-    GENERATESNPLISTS( 
-        // THIS MODULE IMPORTS E-PS LIST (hg38) AND GWAS results (hg19), converts them to hg 19 and merges them
-        // outputting bed files
-        enhancer_plus_GWAS_coords, 
-        hg38ToHg19_chain
+    // GENERATESNPLISTS( 
+    //     // THIS MODULE IMPORTS E-PS LIST (hg38) AND GWAS results (hg19), converts them to hg 19 and merges them
+    //     // outputting bed files
+    //     enhancer_plus_GWAS_coords, 
+    //     hg38ToHg19_chain
 
-        //out tuple val(meta), path("GWAS_*_hg19.bed"), path("ENH_*_hg19.bed"), path(pheno), path("ENH_*_hg19.csv"), emit: processed_ENH_SNP_lists_hg19
-        )
+    //     //out tuple val(meta), path("GWAS_*_hg19.bed"), path("ENH_*_hg19.bed"), path(pheno), path("ENH_*_hg19.csv"), emit: processed_ENH_SNP_lists_hg19
+    //     )
 
     
-    chromosomes_by_condition_plus_SNPs = 
-        GENERATESNPLISTS.out.processed_ENH_SNP_lists_hg19
-            .combine(genotype_chr_files) //The combine operator combines (cartesian product) the items emitted by two channels
-            // .view()
+    // chromosomes_by_condition_plus_SNPs = 
+    //     GENERATESNPLISTS.out.processed_ENH_SNP_lists_hg19
+    //         .combine(genotype_chr_files) //The combine operator combines (cartesian product) the items emitted by two channels
+    //         // .view()
         
 
 
-    PLINK2_EXTRACT ( 
-        // extract genotypes at bed file locations
-        chromosomes_by_condition_plus_SNPs
+    // PLINK2_EXTRACT ( 
+    //     // extract genotypes at bed file locations
+    //     chromosomes_by_condition_plus_SNPs
 
-        //out tuple val(meta), path("*.bim"), path("*.bed"), path ("*.fam"), path("*.log"), emit: SNPextracted_by_chromosome
-        )
+    //     //out tuple val(meta), path("*.bim"), path("*.bed"), path ("*.fam"), path("*.log"), emit: SNPextracted_by_chromosome
+    //     )
     
-    // PLINK2_EXTRACT.out.SNPextracted_by_chromosome.view()
+    // // PLINK2_EXTRACT.out.SNPextracted_by_chromosome.view()
 
-    PLINK2_EXTRACT.out.SNPextracted_by_chromosome
-        .branch{
-            SCZ: it =~ /SCZ/
-            HCM: it =~ /HCM/
-        }
-        .set{ SNPextracted_by_chromosome_byMeta }
+    // PLINK2_EXTRACT.out.SNPextracted_by_chromosome
+    //     .branch{
+    //         SCZ: it =~ /SCZ/
+    //         HCM: it =~ /HCM/
+    //     }
+    //     .set{ SNPextracted_by_chromosome_byMeta }
         
     
-    //split channel by meta, collect all bed files per chr, and generate tuple
-    bedfiles = Channel
-        .empty()
-        .mix(
-            SNPextracted_by_chromosome_byMeta.SCZ
-                .map{it-> it[2]}
-                .collect()
-                .map{it-> ["SCZ", it]}
-                // .view()
-                )
-        .mix(
-            SNPextracted_by_chromosome_byMeta.HCM
-                .map{it-> it[2]}
-                .collect()
-                .map{it-> ["HCM", it]}
-                // .view()
-        )
-    // bedfiles.view()
+    // //split channel by meta, collect all bed files per chr, and generate tuple
+    // bedfiles = Channel
+    //     .empty()
+    //     .mix(
+    //         SNPextracted_by_chromosome_byMeta.SCZ
+    //             .map{it-> it[2]}
+    //             .collect()
+    //             .map{it-> ["SCZ", it]}
+    //             // .view()
+    //             )
+    //     .mix(
+    //         SNPextracted_by_chromosome_byMeta.HCM
+    //             .map{it-> it[2]}
+    //             .collect()
+    //             .map{it-> ["HCM", it]}
+    //             // .view()
+    //     )
+    // // bedfiles.view()
     
     
 
-    PLINK_MERGE(
-        // merge all bed files into one:
-        bedfiles, 
-        UKBBethinicityRelatedness
+    // PLINK_MERGE(
+    //     // merge all bed files into one:
+    //     bedfiles, 
+    //     UKBBethinicityRelatedness
 
-        //out tuple val(meta), path ("*.bed"), path ("*.bim"), path ("*.fam"), path ("*.log") , emit: all_chromosomes_extracted
-        )
+    //     //out tuple val(meta), path ("*.bed"), path ("*.bim"), path ("*.fam"), path ("*.log") , emit: all_chromosomes_extracted
+    //     )
     
-    // PLINK_MERGE.out.all_chromosomes_extracted.view()
+    // // PLINK_MERGE.out.all_chromosomes_extracted.view()
 
 
-    PLINK2_ASSOC_GLM(
+    // PLINK2_ASSOC_GLM(
 
-        PLINK_MERGE.out.all_chromosomes_extracted
-            //join will join all_chromosomes_extracted with the SNP list output from step 1 by condition (meta)
-            .join(GENERATESNPLISTS.out.processed_ENH_SNP_lists_hg19.map{it->[it[0],it[2]]}, by: [0])//join ENH hg19 bed file
-            .join(enhancer_plus_GWAS_coords.map{it->[it[0],it[3]]}, by: [0]), // also join pheno file
-        UKBB_covariates 
+    //     PLINK_MERGE.out.all_chromosomes_extracted
+    //         //join will join all_chromosomes_extracted with the SNP list output from step 1 by condition (meta)
+    //         .join(GENERATESNPLISTS.out.processed_ENH_SNP_lists_hg19.map{it->[it[0],it[2]]}, by: [0])//join ENH hg19 bed file
+    //         .join(enhancer_plus_GWAS_coords.map{it->[it[0],it[3]]}, by: [0]), // also join pheno file
+    //     UKBB_covariates 
 
-        //out tuple val(meta), path ("*_ORs_PLINK2_logistic_firth_fallback_covar_recessive.PHENO1.glm.logistic.hybrid"), path ("*_ORs_PLINK2_logistic_firth_fallback_covar_standard.PHENO1.glm.logistic.hybrid"), emit: associations
-        )
+    //     //out tuple val(meta), path ("*_ORs_PLINK2_logistic_firth_fallback_covar_recessive.PHENO1.glm.logistic.hybrid"), path ("*_ORs_PLINK2_logistic_firth_fallback_covar_standard.PHENO1.glm.logistic.hybrid"), emit: associations
+    //     )
 
     
-    R_ANNOTATE_ORs(
-        // annotate ORs from previous step with GWAS results and other info,
-        //produce OR plots
-        PLINK2_ASSOC_GLM.out.associations // ORs
-            .join(GENERATESNPLISTS.out.processed_ENH_SNP_lists_hg19.map{it->[it[0],it[4]]}, by: [0])//join ENH hg19 csv file
-            .join(full_GWAS_hg19, by: [0]), //join full GWAS by condition
+    // R_ANNOTATE_ORs(
+    //     // annotate ORs from previous step with GWAS results and other info,
+    //     //produce OR plots
+    //     PLINK2_ASSOC_GLM.out.associations // ORs
+    //         .join(GENERATESNPLISTS.out.processed_ENH_SNP_lists_hg19.map{it->[it[0],it[4]]}, by: [0])//join ENH hg19 csv file
+    //         .join(full_GWAS_hg19, by: [0]), //join full GWAS by condition
      
-        hg38ToHg19_chain,
-        GW_LD_blocks
+    //     hg38ToHg19_chain,
+    //     GW_LD_blocks
         
-        // out: tuple val(meta), path("*_annotated_ORs.csv"),       emit: annotated_ORs
-    )
+    //     // out: tuple val(meta), path("*_annotated_ORs.csv"),       emit: annotated_ORs
+    // )
     
-    PLINK2_QC_PRUNE_HET (
-        PLINK_MERGE.out.all_chromosomes_extracted
+    // PLINK2_QC_PRUNE_HET (
+    //     PLINK_MERGE.out.all_chromosomes_extracted
         
-        //out tuple val(meta), path ("*.prune.in"), path ("*.het"), emit: pruned_variants_het
-    )
-    R_PRS_QC (
-        PLINK2_QC_PRUNE_HET.out.pruned_variants_het         //het file
-            .join(PLINK_MERGE.out.all_chromosomes_extracted, by: [0]) //join merged genotype files
-            .join(full_GWAS_hg19, by: [0])                       //join full GWAS by condition
+    //     //out tuple val(meta), path ("*.prune.in"), path ("*.het"), emit: pruned_variants_het
+    // )
+    // R_PRS_QC (
+    //     PLINK2_QC_PRUNE_HET.out.pruned_variants_het         //het file
+    //         .join(PLINK_MERGE.out.all_chromosomes_extracted, by: [0]) //join merged genotype files
+    //         .join(full_GWAS_hg19, by: [0])                       //join full GWAS by condition
         
-        //out tuple val(meta), path ("*_het_valid_out.sample"), path("*_a1_bim"), path("*_mismatching_SNPs"),  emit: QC_het_a1_mismatch
-    )
+    //     //out tuple val(meta), path ("*_het_valid_out.sample"), path("*_a1_bim"), path("*_mismatching_SNPs"),  emit: QC_het_a1_mismatch
+    // )
 
-    PLINK_PRODUCE_QC_DATASET (
-        PLINK_MERGE.out.all_chromosomes_extracted
-            .join(R_PRS_QC.out.QC_het_a1_mismatch, by: [0]) //join het, A1 bim, mismatching SNPs from previous step
-            // .view()
-        //out tuple val(meta), path ("*.bed"), path ("*.bim"), path ("*.fam"), path ("*.log") , emit: all_chromosomes_QC
-    )
+    // PLINK_PRODUCE_QC_DATASET (
+    //     PLINK_MERGE.out.all_chromosomes_extracted
+    //         .join(R_PRS_QC.out.QC_het_a1_mismatch, by: [0]) //join het, A1 bim, mismatching SNPs from previous step
+    //         // .view()
+    //     //out tuple val(meta), path ("*.bed"), path ("*.bim"), path ("*.fam"), path ("*.log") , emit: all_chromosomes_QC
+    // )
 
-    R_PREPARE_MODIF_PRS (
-        full_GWAS_hg19                                      // full GWAS by condition
-            .join(R_ANNOTATE_ORs.out.annotated_ORs, by: [0]),// *_annotated_ORs.csv
-        // GW_LD_blocks
-        // out tuple val(meta),  path("*_original_dedup_GWAS.tsv"), path("*_substituted_GWAS.tsv"), path("*_tissue_EPeQTL_associations.tsv"), path("*_tissue_facet_associations.tsv"), path("*_all_TS_EPs_associations.tsv"), path("*_merged_GWAS.tsv"), path("*_all_TS_EPs_ZEROP_associations.tsv"), emit: orig_and_modified_GWASes
-    )
+    // R_PREPARE_MODIF_PRS (
+    //     full_GWAS_hg19                                      // full GWAS by condition
+    //         .join(R_ANNOTATE_ORs.out.annotated_ORs, by: [0]),// *_annotated_ORs.csv
+    //     // GW_LD_blocks
+    //     // out tuple val(meta),  path("*_original_dedup_GWAS.tsv"), path("*_substituted_GWAS.tsv"), path("*_tissue_EPeQTL_associations.tsv"), path("*_tissue_facet_associations.tsv"), path("*_all_TS_EPs_associations.tsv"), path("*_merged_GWAS.tsv"), path("*_all_TS_EPs_ZEROP_associations.tsv"), emit: orig_and_modified_GWASes
+    // )
 
-    PLINK_clump (
-        //tuple val(meta),  path("*_original_dedup_GWAS.tsv"), path("*_substituted_GWAS.tsv"), path("*_tissue_EPeQTL_associations.tsv"), path("*_tissue_facet_associations.tsv"), path("*_all_TS_EPs_associations.tsv"), path("*_merged_GWAS.tsv"), path("*_all_TS_EPs_ZEROP_associations.tsv"), emit: orig_and_modified_GWASes
-        R_PREPARE_MODIF_PRS.out.orig_and_modified_GWASes    // merged_GWAS for clumping
-            .join(LD_reference2, by: [0])                   //bed bim fam 1000 genomes ref files by DX
+    // PLINK_clump (
+    //     //tuple val(meta),  path("*_original_dedup_GWAS.tsv"), path("*_substituted_GWAS.tsv"), path("*_tissue_EPeQTL_associations.tsv"), path("*_tissue_facet_associations.tsv"), path("*_all_TS_EPs_associations.tsv"), path("*_merged_GWAS.tsv"), path("*_all_TS_EPs_ZEROP_associations.tsv"), emit: orig_and_modified_GWASes
+    //     R_PREPARE_MODIF_PRS.out.orig_and_modified_GWASes    // merged_GWAS for clumping
+    //         .join(LD_reference2, by: [0])                   //bed bim fam 1000 genomes ref files by DX
         
-    )
+    // )
 
-    R_PREPARE_MODIF_PRS_2_LISTS (
-        PLINK_clump.out.clumped_SNPs 
-            .join(R_PREPARE_MODIF_PRS.out.orig_and_modified_GWASes, by: [0])
-        //out tuple val(meta),  path("*_original_NoEPs_associations_clumped.tsv"), path("*_NonOverlapOriginal_TS_EPs_associations_clumped.tsv"), emit: split_GWASes
-    )
+    // R_PREPARE_MODIF_PRS_2_LISTS (
+    //     PLINK_clump.out.clumped_SNPs 
+    //         .join(R_PREPARE_MODIF_PRS.out.orig_and_modified_GWASes, by: [0])
+    //     //out tuple val(meta),  path("*_original_NoEPs_associations_clumped.tsv"), path("*_NonOverlapOriginal_TS_EPs_associations_clumped.tsv"), emit: split_GWASes
+    // )
 
     
-    PRSice_calculate_PRS_original(
-        R_PREPARE_MODIF_PRS.out.orig_and_modified_GWASes          // modified and original deduplicated GWAS
-            //tuple tuple val(meta),  path("*_original_dedup_GWAS.tsv"), path("*_substituted_GWAS.tsv"), path("*_tissue_EPeQTL_associations.tsv"), path("*_tissue_facet_associations.tsv"), path("*_all_TS_EPs_associations.tsv"), path("*_merged_GWAS.tsv"), emit: orig_and_modified_GWASes
-            .join(PLINK_PRODUCE_QC_DATASET.out.all_chromosomes_QC, by: [0])         //QCed UKBB genotypes
-            //tuple val(meta), path ("*.bed"), path ("*.bim"), path ("*.fam"), path ("*.log") , emit: all_chromosomes_QC
-            .join(enhancer_plus_GWAS_coords.map{it->[it[0],it[3]]}, by: [0])       // also join pheno file
-            //tuple val(meta), pheno
-            .join(LD_reference2, by: [0]),
-            //bed bim fam 1000 genomes ref files by DX
-        UKBB_covariates,
-        UKBB_rs34380086_cases
-    )
-    // PRSice_calculate_PRS_substituted(
+    // PRSice_calculate_PRS_original(
+    //     R_PREPARE_MODIF_PRS.out.orig_and_modified_GWASes          // modified and original deduplicated GWAS
+    //         //tuple tuple val(meta),  path("*_original_dedup_GWAS.tsv"), path("*_substituted_GWAS.tsv"), path("*_tissue_EPeQTL_associations.tsv"), path("*_tissue_facet_associations.tsv"), path("*_all_TS_EPs_associations.tsv"), path("*_merged_GWAS.tsv"), emit: orig_and_modified_GWASes
+    //         .join(PLINK_PRODUCE_QC_DATASET.out.all_chromosomes_QC, by: [0])         //QCed UKBB genotypes
+    //         //tuple val(meta), path ("*.bed"), path ("*.bim"), path ("*.fam"), path ("*.log") , emit: all_chromosomes_QC
+    //         .join(enhancer_plus_GWAS_coords.map{it->[it[0],it[3]]}, by: [0])       // also join pheno file
+    //         //tuple val(meta), pheno
+    //         .join(LD_reference2, by: [0]),
+    //         //bed bim fam 1000 genomes ref files by DX
+    //     UKBB_covariates,
+    //     UKBB_rs34380086_cases
+    // )
+    // // PRSice_calculate_PRS_substituted(
+    // //     R_PREPARE_MODIF_PRS.out.orig_and_modified_GWASes          // modified and original deduplicated GWAS
+    // //         //tuple val(meta),  path("*_original_dedup_GWAS.csv"), path("*_substituted_GWAS.csv"), path("*_tissue_EPeQTL_associations.csv"), path("*_tissue_facet_associations.csv"), path("*_all_TS_EPs_associations.csv"), path("*_original_NoEPs_associations.csv"), path("*_NonOverlapOriginal_TS_EPs_associations.csv"),   emit: orig_and_modified_GWASes
+    // //         .join(PLINK_PRODUCE_QC_DATASET.out.all_chromosomes_QC, by: [0])         //QCed UKBB genotypes
+    // //         //tuple val(meta), path ("*.bed"), path ("*.bim"), path ("*.fam"), path ("*.log") , emit: all_chromosomes_QC
+    // //         .join(enhancer_plus_GWAS_coords.map{it->[it[0],it[3]]}, by: [0])       // also join pheno file
+    // //         //tuple val(meta), pheno
+    // //         .join(LD_reference2, by: [0]),
+    // //         //bed bim fam 1000 genomes ref files by DX
+    // //     UKBB_covariates,
+    // //     UKBB_rs34380086_cases
+    // // )
+    // PRSice_calculate_PRS_TS_partition(
     //     R_PREPARE_MODIF_PRS.out.orig_and_modified_GWASes          // modified and original deduplicated GWAS
     //         //tuple val(meta),  path("*_original_dedup_GWAS.csv"), path("*_substituted_GWAS.csv"), path("*_tissue_EPeQTL_associations.csv"), path("*_tissue_facet_associations.csv"), path("*_all_TS_EPs_associations.csv"), path("*_original_NoEPs_associations.csv"), path("*_NonOverlapOriginal_TS_EPs_associations.csv"),   emit: orig_and_modified_GWASes
     //         .join(PLINK_PRODUCE_QC_DATASET.out.all_chromosomes_QC, by: [0])         //QCed UKBB genotypes
@@ -238,62 +236,42 @@ workflow UKBB_OR_develop {
     //     UKBB_covariates,
     //     UKBB_rs34380086_cases
     // )
-    PRSice_calculate_PRS_TS_partition(
-        R_PREPARE_MODIF_PRS.out.orig_and_modified_GWASes          // modified and original deduplicated GWAS
-            //tuple val(meta),  path("*_original_dedup_GWAS.csv"), path("*_substituted_GWAS.csv"), path("*_tissue_EPeQTL_associations.csv"), path("*_tissue_facet_associations.csv"), path("*_all_TS_EPs_associations.csv"), path("*_original_NoEPs_associations.csv"), path("*_NonOverlapOriginal_TS_EPs_associations.csv"),   emit: orig_and_modified_GWASes
-            .join(PLINK_PRODUCE_QC_DATASET.out.all_chromosomes_QC, by: [0])         //QCed UKBB genotypes
-            //tuple val(meta), path ("*.bed"), path ("*.bim"), path ("*.fam"), path ("*.log") , emit: all_chromosomes_QC
-            .join(enhancer_plus_GWAS_coords.map{it->[it[0],it[3]]}, by: [0])       // also join pheno file
-            //tuple val(meta), pheno
-            .join(LD_reference2, by: [0]),
-            //bed bim fam 1000 genomes ref files by DX
-        UKBB_covariates,
-        UKBB_rs34380086_cases
-    )
-    PRSice_calculate_4_partition(
-        R_PREPARE_MODIF_PRS_2_LISTS.out.split_GWASes
-            //out tuple val(meta),  path("*_original_NoEPs_associations_clumped.tsv"), path("*_NonOverlapOriginal_TS_EPs_associations_clumped.tsv"), emit: split_GWASes
-            .join(PLINK_PRODUCE_QC_DATASET.out.all_chromosomes_QC, by: [0])         //QCed UKBB genotypes
-            //tuple val(meta), path ("*.bed"), path ("*.bim"), path ("*.fam"), path ("*.log") , emit: all_chromosomes_QC
-            .join(enhancer_plus_GWAS_coords.map{it->[it[0],it[3]]}, by: [0])       // also join pheno file
-            //tuple val(meta), pheno
-            .join(LD_reference2, by: [0]),
-            //bed bim fam 1000 genomes ref files by DX
-        UKBB_covariates,
-        UKBB_rs34380086_cases
-    )
+    // PRSice_calculate_4_partition(
+    //     R_PREPARE_MODIF_PRS_2_LISTS.out.split_GWASes
+    //         //out tuple val(meta),  path("*_original_NoEPs_associations_clumped.tsv"), path("*_NonOverlapOriginal_TS_EPs_associations_clumped.tsv"), emit: split_GWASes
+    //         .join(PLINK_PRODUCE_QC_DATASET.out.all_chromosomes_QC, by: [0])         //QCed UKBB genotypes
+    //         //tuple val(meta), path ("*.bed"), path ("*.bim"), path ("*.fam"), path ("*.log") , emit: all_chromosomes_QC
+    //         .join(enhancer_plus_GWAS_coords.map{it->[it[0],it[3]]}, by: [0])       // also join pheno file
+    //         //tuple val(meta), pheno
+    //         .join(LD_reference2, by: [0]),
+    //         //bed bim fam 1000 genomes ref files by DX
+    //     UKBB_covariates,
+    //     UKBB_rs34380086_cases
+    // )
     
-    R_PRS_PPV_plotting(
-        //tuple val(meta), path("*_original_PRS.summary"), path("*_original_PRS.prsice"), path("*_original_PRS.best")
-        PRSice_calculate_PRS_original.out.PRS_text_results
-            //tuple val(meta), path("*_REC_NonOverlapOriginal_TS_EPs_associations_partition_PLINKclump_PRS.summary"), path("*_REC_NonOverlapOriginal_TS_EPs_associations_partition_PLINKclump_PRS.prsice"), path("*_REC_NonOverlapOriginal_TS_EPs_associations_partition_PLINKclump_PRS.best"), path("*_ADD_original_NoEPs_associations_partition_PLINKclump_PRS.summary"), path("*_ADD_original_NoEPs_associations_partition_PLINKclump_PRS.prsice"), path("*_ADD_original_NoEPs_associations_partition_PLINKclump_PRS.best"), emit: PRS_text_split_results
-            .join(PRSice_calculate_4_partition.out.PRS_text_split_results, by: [0])
-            .join(PRSice_calculate_PRS_TS_partition.out.PRS_text_results, by: [0])
-    )
+    // R_PRS_PPV_plotting(
+    //     //tuple val(meta), path("*_original_PRS.summary"), path("*_original_PRS.prsice"), path("*_original_PRS.best")
+    //     PRSice_calculate_PRS_original.out.PRS_text_results
+    //         //tuple val(meta), path("*_REC_NonOverlapOriginal_TS_EPs_associations_partition_PLINKclump_PRS.summary"), path("*_REC_NonOverlapOriginal_TS_EPs_associations_partition_PLINKclump_PRS.prsice"), path("*_REC_NonOverlapOriginal_TS_EPs_associations_partition_PLINKclump_PRS.best"), path("*_ADD_original_NoEPs_associations_partition_PLINKclump_PRS.summary"), path("*_ADD_original_NoEPs_associations_partition_PLINKclump_PRS.prsice"), path("*_ADD_original_NoEPs_associations_partition_PLINKclump_PRS.best"), emit: PRS_text_split_results
+    //         .join(PRSice_calculate_4_partition.out.PRS_text_split_results, by: [0])
+    //         .join(PRSice_calculate_PRS_TS_partition.out.PRS_text_results, by: [0])
+    // )
 
-    R_calculate_compound_PRS_fit_and_plot (
-        PRSice_calculate_4_partition.out.PRS_text_split_results
-            .join(PRSice_calculate_PRS_original.out.PRS_text_results, by: [0])
-            .join(enhancer_plus_GWAS_coords.map{it->[it[0],it[3]]}, by: [0]) // join Diagnosis
+    // R_calculate_compound_PRS_fit_and_plot (
+    //     PRSice_calculate_4_partition.out.PRS_text_split_results
+    //         .join(PRSice_calculate_PRS_original.out.PRS_text_results, by: [0])
+    //         .join(enhancer_plus_GWAS_coords.map{it->[it[0],it[3]]}, by: [0]) // join Diagnosis
 
-    )
+    // )
 
-    R_plot_GO (
-        R_ANNOTATE_ORs.out.annotated_ORs
-            .join(full_GWAS_hg19, by: [0])
-            .join(enhancer_plus_GWAS_coords.map{it->[it[0],it[1]]}, by: [0]) //initial ENH_P list
-    )
+    // R_plot_GO (
+    //     R_ANNOTATE_ORs.out.annotated_ORs
+    //         .join(full_GWAS_hg19, by: [0])
+    //         .join(enhancer_plus_GWAS_coords.map{it->[it[0],it[1]]}, by: [0]) //initial ENH_P list
+    // )
 
-    Channel
-        .empty()
-        .mix( GENERATESNPLISTS.out.versions )
-        .mix( PLINK2_EXTRACT.out.versions )
-        // .mix( PLINK_MERGE.out.versions )
-        //.mix( R_CALC_OR_perSNP.out.versions ) not needed as same modules as generatesnplists
-        .mix( R_ANNOTATE_ORs.out.versions )
-        .set{ ch_versions }
 
-    VERSIONSHTML( ch_versions.unique().collectFile() )
+
 
 }
 

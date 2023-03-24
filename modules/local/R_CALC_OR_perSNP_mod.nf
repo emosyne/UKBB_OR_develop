@@ -1,6 +1,6 @@
 process R_CALC_OR_perSNP {
     debug true
-    container 'emosyne/r_docker:1.7'
+    container 'emosyne/r_docker:1.97'
     stageInMode 'copy'
     label 'process_high_memory'
     tag "$meta"

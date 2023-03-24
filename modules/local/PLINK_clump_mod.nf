@@ -2,7 +2,7 @@ process PLINK_clump {
     // debug true
     tag "$meta"
     label 'process_low'
-    container 'emosyne/plink2:1.2'
+    container 'emosyne/plink2:1.23'
     cache 'lenient'
 
     input:

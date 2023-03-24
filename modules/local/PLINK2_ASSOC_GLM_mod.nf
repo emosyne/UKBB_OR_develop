@@ -3,7 +3,7 @@ process PLINK2_ASSOC_GLM {
     // debug true
     label 'process_high_memory'
     cache 'lenient'
-    container 'emosyne/plink2:1.2'
+    container 'emosyne/plink2:1.23'
     errorStrategy 'ignore'
 
     input: 

@@ -2,7 +2,7 @@ process PRSice_calculate_PRS_substituted {
     // debug true
     tag "$meta"
     label 'process_high_memory'
-    container 'emosyne/r_docker:1.7'
+    container 'emosyne/r_docker:1.97'
     cache 'lenient'
 
 

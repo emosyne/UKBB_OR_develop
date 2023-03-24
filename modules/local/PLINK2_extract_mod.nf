@@ -4,7 +4,7 @@ process PLINK2_EXTRACT {
     // maxForks 4
     tag "$meta"
     errorStrategy = 'finish' 
-    container 'emosyne/plink2:1.2'
+    container 'emosyne/plink2:1.23'
     cache 'lenient'
 
     input: 

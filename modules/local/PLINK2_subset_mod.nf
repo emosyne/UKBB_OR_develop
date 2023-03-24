@@ -3,7 +3,7 @@ process PLINK2_SUBSET {
     label 'process_high_memory'
     tag "$meta"
     cache 'lenient'
-    container 'emosyne/plink2:1.2'
+    container 'emosyne/plink2:1.23'
 
     input: 
     tuple val(meta), path (bedfilepath), path (bim), path (fam), path (log), path(SNVs_hg19)

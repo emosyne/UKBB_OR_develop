@@ -2,7 +2,7 @@ process PLINK2_QC_PRUNE_HET {
     tag "$meta"
     // debug true
     label 'process_high_memory'
-    container 'emosyne/plink2:1.2'
+    container 'emosyne/plink2:1.23'
     cache 'lenient'
 
     input: 

@@ -2,7 +2,7 @@ process PLINK_MERGE {
     // debug true
     tag "$meta"
     label 'process_high_memory'
-    container 'emosyne/plink2:1.2'
+    container 'emosyne/plink2:1.23'
     cache 'lenient'
 
     input:
