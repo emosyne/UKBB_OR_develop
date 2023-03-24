@@ -65,7 +65,7 @@ UKBB_rs34380086_cases = Channel.fromPath( './input/biobank/rs34380086_cases.phen
 //LD ref
 LD_reference = Channel.from("bed","bim","fam") 
     .map { ext -> [file("$ld_ref_dir/EUR_phase3_autosomes_hg19.${ext}")] }
-            .collect().map{it-> ["SCZ", it[1],it[3],it[5]]}
+            .collect().map{it-> ["SCZ", it]}
 
 
 
@@ -197,7 +197,7 @@ workflow UKBB_OR_develop {
     PLINK_clump (
         //tuple val(meta),  path("*_original_dedup_GWAS.tsv"), path("*_substituted_GWAS.tsv"), path("*_tissue_EPeQTL_associations.tsv"), path("*_tissue_facet_associations.tsv"), path("*_all_TS_EPs_associations.tsv"), path("*_merged_GWAS.tsv"), path("*_all_TS_EPs_ZEROP_associations.tsv"), emit: orig_and_modified_GWASes
         R_PREPARE_MODIF_PRS.out.orig_and_modified_GWASes    // merged_GWAS for clumping
-            .join(LD_reference2, by: [0])                   //bed bim fam 1000 genomes ref files by DX
+            .join(LD_reference, by: [0])                   //bed bim fam 1000 genomes ref files by DX
         
     )
 
