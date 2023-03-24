@@ -121,19 +121,20 @@ workflow UKBB_OR_develop {
                 .map{it-> ["HCM", it]}
                 // .view()
         )
-    bedfiles.view()
+    // bedfiles.view()
     
     
 
-    // PLINK_MERGE(
-    //     // merge all bed files into one:
-    //     bedfiles, 
-    //     UKBBethinicityRelatedness
+    PLINK_MERGE(
+        // merge all bed files into one:
+        bedfiles, 
+        UKBBethinicityRelatedness
 
-    //     //out tuple val(meta), path ("*.bed"), path ("*.bim"), path ("*.fam"), path ("*.log") , emit: all_chromosomes_extracted
-    //     )
+        //out tuple val(meta), path ("*.bed"), path ("*.bim"), path ("*.fam"), path ("*.log") , emit: all_chromosomes_extracted
+        )
     
-    // // PLINK_MERGE.out.all_chromosomes_extracted.view()
+    PLINK_MERGE.out.all_chromosomes_extracted.view()
+    PLINK_MERGE.out.chrfilelist.view()
 
 
     // PLINK2_ASSOC_GLM(
