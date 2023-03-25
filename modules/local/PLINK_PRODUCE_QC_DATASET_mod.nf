@@ -15,24 +15,18 @@ process PLINK_PRODUCE_QC_DATASET {
     path "versions1.yml"           , emit: versions
 
 
-    when:
-    task.ext.when == null || task.ext.when
+
 
     script:
-    def args = task.ext.args 
-    def prefix = task.ext.prefix 
+    def mem_mb = (task.memory * 0.95).toMega()
     """
     plink \\
         --bfile ${bedfilepath.baseName} \\
         --make-bed \\
         --threads $task.cpus \\
+        --memory $mem_mb \\
         --out ${bedfilepath.baseName}_QC
 
-
-    cat <<-END_VERSIONS > versions1.yml
-    "${task.process}":
-        plink: \$(echo \$(plink --version) | sed 's/^PLINK v//;s/64.*//')
-    END_VERSIONS
     
     """
 }
