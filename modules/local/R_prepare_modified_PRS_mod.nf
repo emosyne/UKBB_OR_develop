@@ -13,7 +13,6 @@ process R_PREPARE_MODIF_PRS {
     output:
     tuple val(meta),  path("*_original_dedup_GWAS.tsv"), path("*_substituted_GWAS.tsv"), path("*_only_tissue_EPeQTL_associations.tsv"), path("*_only_tissue_facet_associations.tsv"), path("*_all_TS_EPs_associations.tsv"), path("*_merged_GWAS.tsv"), path("*_all_TS_EPs_associations_Pdivide250.tsv"), emit: orig_and_modified_GWASes
     // path("*.csv")
-    // path("versions.yml")                        ,       emit: versions
 
     script:
     """

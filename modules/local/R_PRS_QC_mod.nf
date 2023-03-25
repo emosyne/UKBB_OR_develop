@@ -14,7 +14,6 @@ process R_PRS_QC {
 
     output:
     tuple val(meta), path ("*_het_valid_out.sample"), path("*_a1_bim"), path("*_mismatching_SNPs"),  emit: QC_het_a1_mismatch
-    path "versions.yml"           , emit: versions
     
 
 

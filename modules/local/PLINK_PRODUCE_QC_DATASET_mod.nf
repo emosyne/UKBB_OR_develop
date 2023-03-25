@@ -12,7 +12,6 @@ process PLINK_PRODUCE_QC_DATASET {
 
     output:
     tuple val(meta), path ("*.bed"), path ("*.bim"), path ("*.fam"), path ("*.log") , emit: all_chromosomes_QC
-    path "versions1.yml"           , emit: versions
 
 
 

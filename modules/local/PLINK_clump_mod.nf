@@ -14,33 +14,21 @@ process PLINK_clump {
     output:
     tuple val(meta), path("*.clumped"), emit: clumped_SNPs
     path("*")
-    // tuple val(meta), path ("*.bed"), path ("*.bim"), path ("*.fam"), path ("*.log") , emit: all_chromosomes_extracted
-    // path "chr_file_list.txt"
-    path "versions1.yml"           , emit: versions
 
 
-    when:
-    task.ext.when == null || task.ext.when
 
     script:
-    def args = task.ext.args 
-    def prefix = task.ext.prefix 
-    // def mem_mb = (task.memory * 0.95).toMega()
-
+    def mem_mb = (task.memory * 0.95).toMega()
     """
     plink  \\
         --clump ${all_TS_EPs_ZEROP_associations},${original_dedup_GWAS} \\
-       --clump-p1 1 --clump-p2 1 \\
-       --clump-kb 500 --clump-r2 0.1 \\
-       --bfile ${EUR_phase3_autosomes_hg19_bed.baseName} \\
-       --out clumped_merged_SNPs_${meta}  \\
-       --threads $task.cpus
+        --clump-p1 1 --clump-p2 1 \\
+        --clump-kb 500 --clump-r2 0.1 \\
+        --bfile ${EUR_phase3_autosomes_hg19_bed.baseName} \\
+        --out clumped_merged_SNPs_${meta}  \\
+        --threads $task.cpus \\
+        --memory $mem_mb
 
-
-    cat <<-END_VERSIONS > versions1.yml
-    "${task.process}":
-        plink: \$(echo \$(plink --version) | sed 's/^PLINK v//;s/64.*//')
-    END_VERSIONS
     
     """
 }

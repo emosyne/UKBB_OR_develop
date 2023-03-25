@@ -12,7 +12,7 @@ process R_PREPARE_MODIF_PRS_2_LISTS {
 
     output:
     tuple val(meta),  path("*_originalGWAS_SNPs_clumped_NoEPs_overlap.tsv"), path("*_TS_EPs_GWAS_REC_clumped_NonOverlapOriginal.tsv"), emit: split_GWASes
-    // path("versions.yml")                        ,       emit: versions
+
 
     script:
     """
