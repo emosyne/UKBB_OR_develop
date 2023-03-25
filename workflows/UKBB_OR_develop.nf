@@ -31,7 +31,7 @@ enhancer_plus_GWAS_coords = Channel.from("SCZ") //,"HCM"
 
 //  SCHIZO and neural lists ##############
 full_GWAS_hg19 = Channel
-    .fromPath("$GWAS_dir/PGC3_SCZ_wave3.european.autosome.public.v3_HCM_format.tsv.gz", checkIfExists: true) 
+    .fromPath("$GWAS_dir/PGC3_SCZ_wave3.european.autosome.public.v3_overInfo.8_OR.tsv.gz", checkIfExists: true) 
     .map{it-> ["SCZ", it]}
 
 
