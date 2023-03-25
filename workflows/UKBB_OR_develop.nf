@@ -23,7 +23,7 @@ include { R_plot_GO }                       from '../modules/local/R_plot_GO.nf'
 enhancer_plus_GWAS_coords = Channel.from("SCZ") //,"HCM"
     .map { condition -> ["${condition}", 
            file("./input/textfiles/ENH_${condition}_hg38.csv.gz", checkIfExists: true), 
-           file("./input/textfiles/GWAS_${condition}_clumped_hg19.tsv.gz", checkIfExists: true), 
+           file("$GWAS_dir/PGC3_SCZ_wave3.european.autosome.public.v3_overInfo.8_OR.tsv.gz", checkIfExists: true), 
            file("./input/biobank/${condition}.pheno", checkIfExists: true)] } 
         //    .view()
 
