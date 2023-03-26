@@ -1,7 +1,7 @@
 process PLINK2_ASSOC_GLM {
     tag "$meta"
     // debug true
-    label 'process_high_memory'
+    label 'vlarge2'
     cache 'lenient'
     container 'emosyne/plink2:1.23'
     // errorStrategy 'ignore'
