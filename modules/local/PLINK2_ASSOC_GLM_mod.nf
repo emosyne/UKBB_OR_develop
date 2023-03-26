@@ -24,7 +24,6 @@ process PLINK2_ASSOC_GLM {
         --threads $task.cpus \\
         --memory $mem_mb \\
         --bfile ${bedfilepath.baseName} \\
-        --extract bed1 ${SNVs_hg19} \\
         --chr 1-22 \\
         --write-snplist \\
         --glm recessive firth-fallback omit-ref hide-covar \\
@@ -41,7 +40,6 @@ process PLINK2_ASSOC_GLM {
         --threads $task.cpus \\
         --memory $mem_mb \\
         --bfile ${bedfilepath.baseName} \\
-        --extract bed1 ${SNVs_hg19} \\
         --chr 1-22 \\
         --write-snplist \\
         --glm firth-fallback omit-ref hide-covar \\
@@ -57,3 +55,4 @@ process PLINK2_ASSOC_GLM {
 
     """
 }
+        // --extract bed1 ${SNVs_hg19} \\
