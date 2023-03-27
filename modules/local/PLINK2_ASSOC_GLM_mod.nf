@@ -1,14 +1,15 @@
 process PLINK2_ASSOC_GLM {
     tag "$meta"
     // debug true
-    label 'vlarge2'
+    label 'process_high_memory'
     cache 'lenient'
     container 'emosyne/plink2:1.23'
     // errorStrategy 'ignore'
 
     input: 
     tuple val(meta), path (bedfilepath), path (bim), path (fam), path (log), path(SNVs_hg19), path(pheno)
-    each path (UKBB_covariates)
+    each path(UKBB_covariates)
+    each path(Neural_significant_enh)
     
 
     output:
@@ -24,6 +25,7 @@ process PLINK2_ASSOC_GLM {
         --threads $task.cpus \\
         --memory $mem_mb \\
         --bfile ${bedfilepath.baseName} \\
+        --extract bed1 ${Neural_significant_enh} \\
         --chr 1-22 \\
         --write-snplist \\
         --glm recessive firth-fallback omit-ref hide-covar \\
@@ -40,6 +42,7 @@ process PLINK2_ASSOC_GLM {
         --threads $task.cpus \\
         --memory $mem_mb \\
         --bfile ${bedfilepath.baseName} \\
+        --extract bed1 ${Neural_significant_enh} \\
         --chr 1-22 \\
         --write-snplist \\
         --glm firth-fallback omit-ref hide-covar \\
@@ -55,4 +58,3 @@ process PLINK2_ASSOC_GLM {
 
     """
 }
-        // --extract bed1 ${SNVs_hg19} \\
