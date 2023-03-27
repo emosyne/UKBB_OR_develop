@@ -45,35 +45,35 @@ genes_with_significant_EPs_RECsignificant_for_condition<- unique(
     filter(tidytype=="neuron_facet_not_eQTLs") %>% 
     dplyr::select(ensembl_gene_id) %>% distinct())
 
-# GO term analysis and plotting
-gene_lists <- c("all_genes_with_significant_TS_EPs", "genes_with_significant_EPs_RECsignificant_for_condition",
-                "genes_with_significant_EP_eQTLs","genes_with_significant_facet_EPs_with_contact")
-gene_list_N <- length(gene_lists)
+# # GO term analysis and plotting
+# gene_lists <- c("all_genes_with_significant_TS_EPs", "genes_with_significant_EPs_RECsignificant_for_condition",
+#                 "genes_with_significant_EP_eQTLs","genes_with_significant_facet_EPs_with_contact")
+# gene_list_N <- length(gene_lists)
   
-Enrich_go_function <- function (gene_list) {
-  enrichGO(gene = gene_list,
-                OrgDb = "org.Hs.eg.db",
-                keyType = "ENSEMBL",
-                ont = "ALL",
-                qvalueCutoff = 0.05,
-                readable = TRUE)
-}
+# Enrich_go_function <- function (gene_list) {
+#   enrichGO(gene = gene_list,
+#                 OrgDb = "org.Hs.eg.db",
+#                 keyType = "ENSEMBL",
+#                 ont = "ALL",
+#                 qvalueCutoff = 0.05,
+#                 readable = TRUE)
+# }
 
 
-i=1
-for (gene_list in gene_lists) { 
-  print (gene_list ) 
-  ego <- Enrich_go_function (unlist(get(gene_list)))
-  (nam <- paste("fig", i, sep = ""))
-  print(nam)
-  assign(nam, 
-         dotplot(ego, showCategory=25, title=paste("GO term analysis",gene_list,"genes, N=",nrow(data.frame(get(gene_list)))))
-  )
-  i<-i+1
+# i=1
+# for (gene_list in gene_lists) { 
+#   print (gene_list ) 
+#   ego <- Enrich_go_function (unlist(get(gene_list)))
+#   (nam <- paste("fig", i, sep = ""))
+#   print(nam)
+#   assign(nam, 
+#          dotplot(ego, showCategory=25, title=paste("GO term analysis",gene_list,"genes, N=",nrow(data.frame(get(gene_list)))))
+#   )
+#   i<-i+1
   
-  }
+#   }
 
 
-png(GO_figure, width = 25, height = 15, units = 'in', res = 300)
-fig1 + fig2 +fig3+fig4
-dev.off()
+# png(GO_figure, width = 25, height = 15, units = 'in', res = 300)
+# fig1 + fig2 +fig3+fig4
+# dev.off()
