@@ -24,9 +24,9 @@ GW_LD_blocks = args[14]
 ))
 
 #OUTPUT
-annotated_ORs_outfilename = paste0(condition, "_", Sys.Date(), "_annotated_ORs.csv")
+annotated_ORs_outfilename = paste0(condition, "_", PLINK_ORs_recessive, "_", Sys.Date(), "_annotated_ORs.csv")
 dir.create(file.path(".", "figs"))
-ORfigure = paste0("figs/PLINK_ORs_",condition, "_", Sys.Date(),"_UKBB.png")
+ORfigure = paste0("figs/PLINK_ORs_", condition, "_", PLINK_ORs_recessive, "_", Sys.Date(),"_UKBB.png")
 
 ## Annotate with  INFO scores, MAF
 

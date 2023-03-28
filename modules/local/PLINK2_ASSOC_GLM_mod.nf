@@ -13,7 +13,7 @@ process PLINK2_ASSOC_GLM {
     
 
     output:
-    tuple val(meta), path ("*_ORs_PLINK2_logistic_firth_fallback_covar_recessive.PHENO1.glm.logistic.hybrid"), path ("*_ORs_PLINK2_logistic_firth_fallback_covar_standard.PHENO1.glm.logistic.hybrid"), emit: associations
+    tuple val(meta), path ("*_ORs_PLINK2_logistic_firth_fallback_covar_recessive.PHENO1.glm.logistic.hybrid"), path ("*_ORs_PLINK2_logistic_firth_fallback_covar_standard.PHENO1.glm.logistic.hybrid"), path("*_ORs_PLINK2_logistic_firth_fallback_covar_dominant.PHENO1.glm.logistic.hybrid"), emit: associations
     path("*.snplist")
     
 
@@ -54,7 +54,23 @@ process PLINK2_ASSOC_GLM {
             --extract ${meta}_ORs_PLINK2_logistic_firth_fallback_covar_standard.snplist \\
             --freq \\
             --out ${meta}_ORs_PLINK2_logistic_firth_fallback_covar_standard
-      
+    
+    plink2 \\
+        --threads $task.cpus \\
+        --memory $mem_mb \\
+        --bfile ${bedfilepath.baseName} \\
+        --extract bed1 ${Neural_significant_enh} \\
+        --chr 1-22 \\
+        --write-snplist \\
+        --glm dominant firth-fallback omit-ref hide-covar \\
+        --ci 0.95 \\
+        --covar ${UKBB_covariates} \\
+        --out ${meta}_ORs_PLINK2_logistic_firth_fallback_covar_dominant
+     plink \\
+            --bfile ${bedfilepath.baseName} \\
+            --extract ${meta}_ORs_PLINK2_logistic_firth_fallback_covar_dominant.snplist \\
+            --freq \\
+            --out ${meta}_ORs_PLINK2_logistic_firth_fallback_covar_dominant
 
     """
 }
