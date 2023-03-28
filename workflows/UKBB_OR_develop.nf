@@ -157,7 +157,7 @@ workflow UKBB_OR_develop {
     R_ANNOTATE_ORs(
         // annotate ORs from previous step with GWAS results and other info,
         //produce OR plots
-        PLINK2_ASSOC_GLM.out.associations_rec // ORs
+        PLINK2_ASSOC_GLM.out.associations // ORs
             .join(GENERATESNPLISTS.out.processed_ENH_SNP_lists_hg19.map{it->[it[0],it[4]]}, by: [0])//join ENH hg19 csv file
             .join(full_GWAS_hg19, by: [0]), //join full GWAS by condition
      
