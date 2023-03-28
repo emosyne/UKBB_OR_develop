@@ -15,6 +15,7 @@ process PLINK2_ASSOC_GLM {
     output:
     tuple val(meta), path ("*_ORs_PLINK2_logistic_firth_fallback_covar_recessive.PHENO1.glm.logistic.hybrid"), path ("*_ORs_PLINK2_logistic_firth_fallback_covar_standard.PHENO1.glm.logistic.hybrid"), path("*_ORs_PLINK2_logistic_firth_fallback_covar_dominant.PHENO1.glm.logistic.hybrid"), emit: associations
     path("*.snplist")
+    path("*.frq")
     
 
     
