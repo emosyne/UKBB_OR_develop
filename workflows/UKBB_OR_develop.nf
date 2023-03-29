@@ -73,21 +73,25 @@ enhancer_lists_bed_files =
 
 workflow UKBB_OR_develop {
     // ################################ EPWAS development ################################
-    // GENERATESNPLISTS( 
-    //     // THIS MODULE IMPORTS E-PS LIST (hg38) AND GWAS results (hg19), converts them to hg 19 and merges them
-    //     // outputting bed files
-    //     enhancer_plus_GWAS_coords, 
-    //     R_extract_GWAS_SNPs_into_bed.out.clumped_GWAS_SNPs_plus_those_in_bed_files,
-    //     hg38ToHg19_chain
-
-    //     //out tuple val(meta), path("GWAS_*_hg19.bed"), path("ENH_*_hg19.bed"), path(pheno), path("ENH_*_hg19.csv"), emit: processed_ENH_SNP_lists_hg19
-    //     )
-    // GENERATESNPLISTS.out.processed_ENH_SNP_lists_hg19.view()
+        PLINK_base_GWAS_QC_and_clump (
+        full_GWAS_HCMformat
+            .join(LD_reference)
+            .map { it.flatten() }
+    )
     
-    // chromosomes_by_condition_plus_SNPs = 
-    //     GENERATESNPLISTS.out.processed_ENH_SNP_lists_hg19
-    //         .combine(genotype_chr_files) //The combine operator combines (cartesian product) the items emitted by two channels
-    //         // .view()
+
+    R_extract_GWAS_SNPs_into_bed ( 
+        // THIS MODULE IMPORTS 
+        // GWAS (hg19), and selects all SNPs in input bed files and all GWAS clumped SNPs and outputs a bed file
+        enhancer_lists_bed_files.map{it -> it[1]}.mix(R_ANNOTATE_ORs.out.EPWAS_SNPs).collect(),
+        PLINK_base_GWAS_QC_and_clump.out.GWAS_QC_noClump
+            .combine(PLINK_base_GWAS_QC_and_clump.out.clumped_SNPs)
+            .map { [it, condition].flatten() }
+        )
+    // // R_extract_GWAS_SNPs_into_bed.out.clumped_GWAS_SNPs_plus_those_in_bed_files
+    // //     .combine(R_extract_GWAS_SNPs_into_bed.out.clumped_GWAS)
+    // //     .view()
+    
     chromosomes_by_condition_plus_SNPs = 
         R_extract_GWAS_SNPs_into_bed.out.clumped_GWAS_SNPs_plus_those_in_bed_files
             .combine(genotype_chr_files) //The combine operator combines (cartesian product) the items emitted by two channels
@@ -174,24 +178,7 @@ workflow UKBB_OR_develop {
     
 // ################################ INTERNAL VALIDATION ################################
 
-    PLINK_base_GWAS_QC_and_clump (
-        full_GWAS_HCMformat
-            .join(LD_reference)
-            .map { it.flatten() }
-    )
-    
 
-    R_extract_GWAS_SNPs_into_bed ( 
-        // THIS MODULE IMPORTS 
-        // GWAS (hg19), and selects all SNPs in input bed files and all GWAS clumped SNPs and outputs a bed file
-        enhancer_lists_bed_files.map{it -> it[1]}.mix(R_ANNOTATE_ORs.out.EPWAS_SNPs).collect(),
-        PLINK_base_GWAS_QC_and_clump.out.GWAS_QC_noClump
-            .combine(PLINK_base_GWAS_QC_and_clump.out.clumped_SNPs)
-            .map { [it, condition].flatten() }
-        )
-    // // R_extract_GWAS_SNPs_into_bed.out.clumped_GWAS_SNPs_plus_those_in_bed_files
-    // //     .combine(R_extract_GWAS_SNPs_into_bed.out.clumped_GWAS)
-    // //     .view()
     
 
 //     // GENERATE UKBB UNIQUE FILE
