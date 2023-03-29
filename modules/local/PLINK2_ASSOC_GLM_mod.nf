@@ -7,7 +7,7 @@ process PLINK2_ASSOC_GLM {
     // errorStrategy 'ignore'
 
     input: 
-    tuple val(meta), path (bedfilepath), path (bim), path (fam), path (log), path(enhancers_bed)
+    tuple val(meta), path (bedfilepath), path (bim), path (fam), path(enhancers_bed)
     each path(UKBB_covariates)
     
 

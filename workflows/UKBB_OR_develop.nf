@@ -164,25 +164,25 @@ workflow UKBB_OR_develop {
     // Remove individuals with heterozigosity F coefficients that are more than 3 standard deviation (SD) units from the mean
     // also remove mismatching SNPs
     // also standard QC --maf 0.01 --mac 100 --geno 0.1 --hwe 1e-15 --mind 0.1 
-    PLINK_PRODUCE_QC_DATASET ( //   SETTING TO BE RESTORED FOR RUNNING IN IMPERIAL     --maf 0.01 --mac 100 --geno 0.1 --hwe 1e-15 --mind 0.1 \\
-
+    PLINK_PRODUCE_QC_DATASET ( 
         R_PRS_QC.out.QC_het_a1_mismatch
     )
 
     PLINK_PRODUCE_QC_DATASET.out.all_chromosomes_QC.view()
 
 
-    // PLINK2_ASSOC_GLM(
-    //     PLINK_MERGE.out.all_chromosomes_extracted
-    //         //join will join all_chromosomes_extracted with the SNP list output from step 1 by condition (meta)
-    //         .join(enhancer_lists_bed_files, by: [0]),//join ENH hg19 bed file
-    //     UKBB_covariates
-    //     //out tuple val(meta), path ("*_ORs_PLINK2_logistic_firth_fallback_covar_recessive.PHENO1.glm.logistic.hybrid"), path ("*_ORs_PLINK2_logistic_firth_fallback_covar_standard.PHENO1.glm.logistic.hybrid"), emit: associations
-    //     )
-    //     //  PLINK2_ASSOC_GLM.out.associations // ORs
-    //     //     .join(full_GWAS_hg19, by: [0]) //join full GWAS by condition
-    //     //     .view() 
-    //     // [SCZ, /rds/general/ephemeral/user/eosimo/ephemeral/UKBB_OR_develop/work/6f/d017d89d2b671cc0ff910a7ced8502/SCZ_ORs_PLINK2_logistic_firth_fallback_covar_recessive.PHENO1.glm.logistic.hybrid, /rds/general/ephemeral/user/eosimo/ephemeral/UKBB_OR_develop/work/6f/d017d89d2b671cc0ff910a7ced8502/SCZ_ORs_PLINK2_logistic_firth_fallback_covar_standard.PHENO1.glm.logistic.hybrid, /rds/general/ephemeral/user/eosimo/ephemeral/UKBB_OR_develop/work/6f/d017d89d2b671cc0ff910a7ced8502/SCZ_ORs_PLINK2_logistic_firth_fallback_covar_dominant.PHENO1.glm.logistic.hybrid, /rds/general/ephemeral/user/eosimo/ephemeral/UKBB_OR_develop/work/6f/d017d89d2b671cc0ff910a7ced8502/SCZ_ORs_PLINK2_logistic_firth_fallback_covar_recessive.frq, /rds/general/user/eosimo/home/largedirs/scz_GWAS/PGC3_SCZ_wave3.european.autosome.public.v3_overInfo.8_OR.tsv.gz]
+    PLINK2_ASSOC_GLM(
+        PLINK_MERGE.out.all_chromosomes_extracted
+            //join will join all_chromosomes_extracted with the SNP list output from step 1 by condition (meta)
+            .combine(enhancer_lists_bed_files.map{it -> it[1]}),// ENH hg19 bed file
+        UKBB_covariates
+        //out tuple val(meta), path ("*_ORs_PLINK2_logistic_firth_fallback_covar_recessive.PHENO1.glm.logistic.hybrid"), path ("*_ORs_PLINK2_logistic_firth_fallback_covar_standard.PHENO1.glm.logistic.hybrid"), emit: associations
+        )
+    
+    PLINK2_ASSOC_GLM.out.associations // ORs
+        .join(full_GWAS_hg19, by: [0]) //join full GWAS by condition
+        .view() 
+    
     
     // R_ANNOTATE_ORs(
     //     // annotate ORs from previous step with GWAS results and other info,

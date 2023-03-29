@@ -13,16 +13,10 @@ process PLINK2_QC_PRUNE_HET {
     output:
     tuple val(meta), path ("*.prune.in"), path ("*.het"), emit: pruned_variants_het
     // path("*.log")
-    path "versions2.yml"           , emit: versions
     
 
-    when:
-    task.ext.when == null || task.ext.when
-
+    
     script:
-    def args = task.ext.args
-    //def prefix = task.ext.prefix 
-    // if( "$PLINKbgenfiles" == "${prefix}.bgen" ) error "Input and output names are the same, use \"task.ext.prefix\" in modules.config to disambiguate!"
     def mem_mb = (task.memory * 0.95).toMega()
     """ 
     plink \\
@@ -40,10 +34,6 @@ process PLINK2_QC_PRUNE_HET {
       
     
 
-    cat <<-END_VERSIONS > versions2.yml
-    "${task.process}":
-        plink2: \$(plink2 --version 2>&1 | sed 's/^PLINK v//; s/ 64.*\$//' )
-    END_VERSIONS
     """
 }
 
