@@ -143,9 +143,9 @@ workflow UKBB_OR_develop {
 
         //out tuple val(meta), path ("*_ORs_PLINK2_logistic_firth_fallback_covar_recessive.PHENO1.glm.logistic.hybrid"), path ("*_ORs_PLINK2_logistic_firth_fallback_covar_standard.PHENO1.glm.logistic.hybrid"), emit: associations
         )
-         PLINK2_ASSOC_GLM.out.associations // ORs
-            .join(full_GWAS_hg19, by: [0]) //join full GWAS by condition
-            .view() 
+        //  PLINK2_ASSOC_GLM.out.associations // ORs
+        //     .join(full_GWAS_hg19, by: [0]) //join full GWAS by condition
+        //     .view() 
         // [SCZ, /rds/general/ephemeral/user/eosimo/ephemeral/UKBB_OR_develop/work/6f/d017d89d2b671cc0ff910a7ced8502/SCZ_ORs_PLINK2_logistic_firth_fallback_covar_recessive.PHENO1.glm.logistic.hybrid, /rds/general/ephemeral/user/eosimo/ephemeral/UKBB_OR_develop/work/6f/d017d89d2b671cc0ff910a7ced8502/SCZ_ORs_PLINK2_logistic_firth_fallback_covar_standard.PHENO1.glm.logistic.hybrid, /rds/general/ephemeral/user/eosimo/ephemeral/UKBB_OR_develop/work/6f/d017d89d2b671cc0ff910a7ced8502/SCZ_ORs_PLINK2_logistic_firth_fallback_covar_dominant.PHENO1.glm.logistic.hybrid, /rds/general/ephemeral/user/eosimo/ephemeral/UKBB_OR_develop/work/6f/d017d89d2b671cc0ff910a7ced8502/SCZ_ORs_PLINK2_logistic_firth_fallback_covar_recessive.frq, /rds/general/user/eosimo/home/largedirs/scz_GWAS/PGC3_SCZ_wave3.european.autosome.public.v3_overInfo.8_OR.tsv.gz]
     
     R_ANNOTATE_ORs(

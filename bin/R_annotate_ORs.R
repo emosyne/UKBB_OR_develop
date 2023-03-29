@@ -16,7 +16,7 @@ PLINK_ORs_recessive = args[9]
 PLINK_ORs_dominant = args[10]
 PLINK_ORs_additive = args[11]
 full_GWAS = args[12]
-SNP_frq = args[13]
+SNP_frq = data.table::fread(args[13])
 
 
 (results_per_snp <- rbind(
@@ -34,7 +34,7 @@ ORfigure = paste0("figs/PLINK_ORs_", condition, "_", PLINK_ORs_recessive, "_", S
 
 
 (results_per_snp2 <- results_per_snp %>% dplyr::select(-ALT,-FIRTH,-Z_STAT,-OBS_CT) %>% 
-    left_join(frq) %>% group_by(SNP, TEST) %>% slice_head(n=1) %>% ungroup())
+    left_join(SNP_frq) %>% group_by(SNP, TEST) %>% slice_head(n=1) %>% ungroup())
 
 
 
