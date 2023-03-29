@@ -57,7 +57,7 @@ results_per_snp_GR
 
 
 ## now annotate with GWAS
-(gwas = data.table::fread(GWAS) %>% 
+(gwas = data.table::fread(full_GWAS) %>% 
     #make fields equivalent to results
     dplyr::select(seqnames=CHR, start=POS, end=POS, SNP, A1, A2, OR, P) 
     # dplyr::mutate(TEST="PGC", L95=NA, U95=NA, MAF=NA )
