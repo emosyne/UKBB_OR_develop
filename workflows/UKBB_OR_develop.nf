@@ -131,7 +131,6 @@ workflow UKBB_OR_develop {
     
 
     PLINK_MERGE(
-        // merge all bed files into one:
         bedfiles, 
         UKBBethinicityRelatedness,
         dx_UKBB_pheno.map{it-> [it[1]]}
@@ -139,33 +138,28 @@ workflow UKBB_OR_develop {
         //out tuple val(meta), path ("*.bed"), path ("*.bim"), path ("*.fam"), path ("*.log") , emit: all_chromosomes_extracted
         )
     
-//     // PLINK_MERGE.out.all_chromosomes_extracted.view() [SCZ, /rds/general/ephemeral/user/eosimo/ephemeral/UKBB_OR_develop/work/8c/41dfb0b869376a5314f9b4a404da3e/SCZ_mergedfile.bed, /rds/general/ephemeral/user/eosimo/ephemeral/UKBB_OR_develop/work/8c/41dfb0b869376a5314f9b4a404da3e/SCZ_mergedfile.bim, /rds/general/ephemeral/user/eosimo/ephemeral/UKBB_OR_develop/work/8c/41dfb0b869376a5314f9b4a404da3e/SCZ_mergedfile.fam, /rds/general/ephemeral/user/eosimo/ephemeral/UKBB_OR_develop/work/8c/41dfb0b869376a5314f9b4a404da3e/SCZ_mergedfile.log]
-//     // PLINK_MERGE.out.chrfilelist.view()
 
 
-//     PLINK2_ASSOC_GLM(
-
-//         PLINK_MERGE.out.all_chromosomes_extracted
-//             //join will join all_chromosomes_extracted with the SNP list output from step 1 by condition (meta)
-//             .join(enhancer_lists_bed_files, by: [0])//join ENH hg19 bed file
-//             .join(dx_UKBB_pheno, by: [0]), // also join pheno file
-//         UKBB_covariates
-
-//         //out tuple val(meta), path ("*_ORs_PLINK2_logistic_firth_fallback_covar_recessive.PHENO1.glm.logistic.hybrid"), path ("*_ORs_PLINK2_logistic_firth_fallback_covar_standard.PHENO1.glm.logistic.hybrid"), emit: associations
-//         )
-//         //  PLINK2_ASSOC_GLM.out.associations // ORs
-//         //     .join(full_GWAS_hg19, by: [0]) //join full GWAS by condition
-//         //     .view() 
-//         // [SCZ, /rds/general/ephemeral/user/eosimo/ephemeral/UKBB_OR_develop/work/6f/d017d89d2b671cc0ff910a7ced8502/SCZ_ORs_PLINK2_logistic_firth_fallback_covar_recessive.PHENO1.glm.logistic.hybrid, /rds/general/ephemeral/user/eosimo/ephemeral/UKBB_OR_develop/work/6f/d017d89d2b671cc0ff910a7ced8502/SCZ_ORs_PLINK2_logistic_firth_fallback_covar_standard.PHENO1.glm.logistic.hybrid, /rds/general/ephemeral/user/eosimo/ephemeral/UKBB_OR_develop/work/6f/d017d89d2b671cc0ff910a7ced8502/SCZ_ORs_PLINK2_logistic_firth_fallback_covar_dominant.PHENO1.glm.logistic.hybrid, /rds/general/ephemeral/user/eosimo/ephemeral/UKBB_OR_develop/work/6f/d017d89d2b671cc0ff910a7ced8502/SCZ_ORs_PLINK2_logistic_firth_fallback_covar_recessive.frq, /rds/general/user/eosimo/home/largedirs/scz_GWAS/PGC3_SCZ_wave3.european.autosome.public.v3_overInfo.8_OR.tsv.gz]
+    PLINK2_ASSOC_GLM(
+        PLINK_MERGE.out.all_chromosomes_extracted
+            //join will join all_chromosomes_extracted with the SNP list output from step 1 by condition (meta)
+            .join(enhancer_lists_bed_files, by: [0])//join ENH hg19 bed file
+        UKBB_covariates
+        //out tuple val(meta), path ("*_ORs_PLINK2_logistic_firth_fallback_covar_recessive.PHENO1.glm.logistic.hybrid"), path ("*_ORs_PLINK2_logistic_firth_fallback_covar_standard.PHENO1.glm.logistic.hybrid"), emit: associations
+        )
+        //  PLINK2_ASSOC_GLM.out.associations // ORs
+        //     .join(full_GWAS_hg19, by: [0]) //join full GWAS by condition
+        //     .view() 
+        // [SCZ, /rds/general/ephemeral/user/eosimo/ephemeral/UKBB_OR_develop/work/6f/d017d89d2b671cc0ff910a7ced8502/SCZ_ORs_PLINK2_logistic_firth_fallback_covar_recessive.PHENO1.glm.logistic.hybrid, /rds/general/ephemeral/user/eosimo/ephemeral/UKBB_OR_develop/work/6f/d017d89d2b671cc0ff910a7ced8502/SCZ_ORs_PLINK2_logistic_firth_fallback_covar_standard.PHENO1.glm.logistic.hybrid, /rds/general/ephemeral/user/eosimo/ephemeral/UKBB_OR_develop/work/6f/d017d89d2b671cc0ff910a7ced8502/SCZ_ORs_PLINK2_logistic_firth_fallback_covar_dominant.PHENO1.glm.logistic.hybrid, /rds/general/ephemeral/user/eosimo/ephemeral/UKBB_OR_develop/work/6f/d017d89d2b671cc0ff910a7ced8502/SCZ_ORs_PLINK2_logistic_firth_fallback_covar_recessive.frq, /rds/general/user/eosimo/home/largedirs/scz_GWAS/PGC3_SCZ_wave3.european.autosome.public.v3_overInfo.8_OR.tsv.gz]
     
-//     R_ANNOTATE_ORs(
-//         // annotate ORs from previous step with GWAS results and other info,
-//         //produce OR plots
-//         PLINK2_ASSOC_GLM.out.associations // ORs
-//             .join(full_GWAS_hg19, by: [0]) //join full GWAS by condition
+    R_ANNOTATE_ORs(
+        // annotate ORs from previous step with GWAS results and other info,
+        //produce OR plots
+        PLINK2_ASSOC_GLM.out.associations // ORs
+            .join(full_GWAS_hg19, by: [0]) //join full GWAS by condition
         
-//         // out: tuple val(meta), path("*_annotated_ORs.csv"),       emit: annotated_ORs
-//     )
+        // out: tuple val(meta), path("*_annotated_ORs.csv"),       emit: annotated_ORs
+    )
     
 // // ################################ INTERNAL VALIDATION ################################
 
