@@ -66,7 +66,7 @@ enhancer_lists_bed_files =
             } 
 
 workflow UKBB_OR_develop {
-    enhancer_lists_bed_files.mix(full_GWAS_HCMformat).view()
+    enhancer_lists_bed_files.mix(full_GWAS_HCMformat).map[it.flatten()].view()
 //     // ################################ EPWAS development ################################
 //     GENERATESNPLISTS( 
 //         // THIS MODULE IMPORTS E-PS LIST (hg38) AND GWAS results (hg19), converts them to hg 19 and merges them
