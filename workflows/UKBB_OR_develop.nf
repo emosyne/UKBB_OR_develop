@@ -161,7 +161,7 @@ workflow UKBB_OR_develop {
 
     PLINK_base_GWAS_QC_and_clump (
         full_GWAS_HCMformat
-            .combine(LD_reference)
+            .join(LD_reference)
             .map { it.flatten() }
     )
     
