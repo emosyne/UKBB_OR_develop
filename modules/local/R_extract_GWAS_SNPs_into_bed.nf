@@ -10,7 +10,7 @@ process R_extract_GWAS_SNPs_into_bed {
     
     input:
     path(collected_bed_files_for_enhancers)
-    tuple path(GWAS_QC_nodups), path(GWAS_QC_nodups_clumped_SNPs), val(condition)
+    tuple val(condition), path(GWAS_QC_nodups), path(GWAS_QC_nodups_clumped_SNPs)
     
 
     output:

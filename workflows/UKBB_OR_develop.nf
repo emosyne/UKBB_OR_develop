@@ -85,59 +85,59 @@ workflow UKBB_OR_develop {
             .join(PLINK_base_GWAS_QC_and_clump.out.clumped_SNPs)
         )
     
-    // chromosomes_by_condition_plus_SNPs = 
-    //     R_extract_GWAS_SNPs_into_bed.out.clumped_GWAS_SNPs_plus_those_in_bed_files
-    //         .combine(genotype_chr_files) //The combine operator combines (cartesian product) the items emitted by two channels
+    chromosomes_by_condition_plus_SNPs = 
+        R_extract_GWAS_SNPs_into_bed.out.clumped_GWAS_SNPs_plus_those_in_bed_files
+            .combine(genotype_chr_files) //The combine operator combines (cartesian product) the items emitted by two channels
             
+    chromosomes_by_condition_plus_SNPs.view()
+
+    PLINK2_EXTRACT ( 
+        // extract genotypes at bed file locations
+        chromosomes_by_condition_plus_SNPs
+
+        //out tuple val(meta), path("*.bim"), path("*.bed"), path ("*.fam"), path("*.log"), emit: SNPextracted_by_chromosome
+        )
+    
+    // PLINK2_EXTRACT.out.SNPextracted_by_chromosome.view()
+    // [SCZ, GWAS_SCZ_SNV_merge_hg19_ukb22828_c17_b0_v3.bim, GWAS_SCZ_SNV_merge_hg19_ukb22828_c17_b0_v3.bed, GWAS_SCZ_SNV_merge_hg19_ukb22828_c17_b0_v3.fam, GWAS_SCZ_SNV_merge_hg19_ukb22828_c17_b0_v3.log]
+
+    PLINK2_EXTRACT.out.SNPextracted_by_chromosome
+        .branch{
+            SCZ: it =~ /SCZ/
+            HCM: it =~ /HCM/
+        }
+        .set{ SNPextracted_by_chromosome_byMeta }
         
-    // chromosomes_by_condition_plus_SNPs.view()
-    // PLINK2_EXTRACT ( 
-    //     // extract genotypes at bed file locations
-    //     chromosomes_by_condition_plus_SNPs
-
-    //     //out tuple val(meta), path("*.bim"), path("*.bed"), path ("*.fam"), path("*.log"), emit: SNPextracted_by_chromosome
-    //     )
     
-//     // PLINK2_EXTRACT.out.SNPextracted_by_chromosome.view()
-//     // [SCZ, GWAS_SCZ_SNV_merge_hg19_ukb22828_c17_b0_v3.bim, GWAS_SCZ_SNV_merge_hg19_ukb22828_c17_b0_v3.bed, GWAS_SCZ_SNV_merge_hg19_ukb22828_c17_b0_v3.fam, GWAS_SCZ_SNV_merge_hg19_ukb22828_c17_b0_v3.log]
-
-//     PLINK2_EXTRACT.out.SNPextracted_by_chromosome
-//         .branch{
-//             SCZ: it =~ /SCZ/
-//             HCM: it =~ /HCM/
-//         }
-//         .set{ SNPextracted_by_chromosome_byMeta }
-        
-    
-//     //split channel by meta, collect all bed files per chr, and generate tuple
-//     bedfiles = Channel
-//         .empty()
-//         .mix(
-//             SNPextracted_by_chromosome_byMeta.SCZ
-//                 .map{it-> it[2]}
-//                 .collect()
-//                 .map{it-> ["SCZ", it]}
-//                 // .view()
-//                 )
-//         .mix(
-//             SNPextracted_by_chromosome_byMeta.HCM
-//                 .map{it-> it[2]}
-//                 .collect()
-//                 .map{it-> ["HCM", it]}
-//                 // .view()
-//         )
-//     // bedfiles.view()
+    //split channel by meta, collect all bed files per chr, and generate tuple
+    bedfiles = Channel
+        .empty()
+        .mix(
+            SNPextracted_by_chromosome_byMeta.SCZ
+                .map{it-> it[2]}
+                .collect()
+                .map{it-> ["SCZ", it]}
+                // .view()
+                )
+        .mix(
+            SNPextracted_by_chromosome_byMeta.HCM
+                .map{it-> it[2]}
+                .collect()
+                .map{it-> ["HCM", it]}
+                // .view()
+        )
+    // bedfiles.view()
     
     
 
-//     PLINK_MERGE(
-//         // merge all bed files into one:
-//         bedfiles, 
-//         UKBBethinicityRelatedness,
-//         dx_UKBB_pheno.map{it-> [it[1]]}
+    PLINK_MERGE(
+        // merge all bed files into one:
+        bedfiles, 
+        UKBBethinicityRelatedness,
+        dx_UKBB_pheno.map{it-> [it[1]]}
 
-//         //out tuple val(meta), path ("*.bed"), path ("*.bim"), path ("*.fam"), path ("*.log") , emit: all_chromosomes_extracted
-//         )
+        //out tuple val(meta), path ("*.bed"), path ("*.bim"), path ("*.fam"), path ("*.log") , emit: all_chromosomes_extracted
+        )
     
 //     // PLINK_MERGE.out.all_chromosomes_extracted.view() [SCZ, /rds/general/ephemeral/user/eosimo/ephemeral/UKBB_OR_develop/work/8c/41dfb0b869376a5314f9b4a404da3e/SCZ_mergedfile.bed, /rds/general/ephemeral/user/eosimo/ephemeral/UKBB_OR_develop/work/8c/41dfb0b869376a5314f9b4a404da3e/SCZ_mergedfile.bim, /rds/general/ephemeral/user/eosimo/ephemeral/UKBB_OR_develop/work/8c/41dfb0b869376a5314f9b4a404da3e/SCZ_mergedfile.fam, /rds/general/ephemeral/user/eosimo/ephemeral/UKBB_OR_develop/work/8c/41dfb0b869376a5314f9b4a404da3e/SCZ_mergedfile.log]
 //     // PLINK_MERGE.out.chrfilelist.view()
