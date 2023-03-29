@@ -72,10 +72,11 @@ workflow UKBB_OR_develop {
             .join(LD_reference)
             .map{it.flatten()}
             .view()
-    // PLINK_base_GWAS_QC_and_clump (
-    //     full_GWAS_HCMformat
-    //         .mix(LD_reference)
-    // )
+    PLINK_base_GWAS_QC_and_clump (
+        full_GWAS_HCMformat
+            .join(LD_reference)
+            .map{it.flatten()}
+    )
     
     
 
