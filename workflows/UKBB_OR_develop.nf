@@ -169,7 +169,7 @@ workflow UKBB_OR_develop {
         R_PRS_QC.out.QC_het_a1_mismatch
     )
 
-    PLINK_PRODUCE_QC_DATASET.out.target_QC.view()
+    PLINK_PRODUCE_QC_DATASET.out.all_chromosomes_QC.view()
 
 
     // PLINK2_ASSOC_GLM(
