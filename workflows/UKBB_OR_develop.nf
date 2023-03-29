@@ -6,16 +6,15 @@ include { R_ANNOTATE_ORs }                  from '../modules/local/R_ANNOTATE_OR
 include { PLINK2_QC_PRUNE_HET }             from '../modules/local/PLINK2_QC_PRUNE_HET_mod.nf'
 include { R_PRS_QC }                        from '../modules/local/R_PRS_QC_mod.nf'
 include { PLINK_PRODUCE_QC_DATASET }        from '../modules/local/PLINK_PRODUCE_QC_DATASET_mod.nf'
-include { R_PREPARE_MODIF_PRS }             from '../modules/local/R_prepare_modified_PRS_mod.nf'
 include { PLINK_clump }                     from '../modules/local/PLINK_clump_mod.nf'
-include { R_PREPARE_MODIF_PRS_2_LISTS }     from '../modules/local/R_prepare_modified_PRS_2_mod.nf'
-include { PRSice_calculate_PRS_original }   from '../modules/local/PRSice_calculate_PRS_mod.nf'
-include { PRSice_calculate_PRS_substituted }        from '../modules/local/PRSice_calculate_PRS_2_mod.nf'
-include { PRSice_calculate_PRS_TS_partition }       from '../modules/local/PRSice_calculate_PRS_3_mod.nf'
-include { PRSice_calculate_4_partition }    from '../modules/local/PRSice_calculate_PRS_4_partition.nf'
-include { R_PRS_PPV_plotting }              from '../modules/local/R_PRS_PPV_plotting_mod.nf'
-include { R_calculate_compound_PRS_fit_and_plot }   from '../modules/local/R_calculate_compound_PRS_fit_and_plot_mod.nf'
-include { R_plot_GO }                       from '../modules/local/R_plot_GO.nf'
+include { PLINK_base_GWAS_QC_and_clump }    from '../modules/local/PLINK_base_GWAS_QC_and_clump.nf'
+include { R_extract_GWAS_SNPs_into_bed }    from '../modules/local/R_extract_GWAS_SNPs_into_bed.nf'
+// include {  }     from '../modules/local/'
+// include {  }     from '../modules/local/'
+// include {  }     from '../modules/local/'
+// include {  }     from '../modules/local/'
+// include {  }     from '../modules/local/'
+
 
 
 
@@ -158,11 +157,6 @@ workflow UKBB_OR_develop {
     )
     
 
-    // // R_plot_GO (
-    // //     R_ANNOTATE_ORs.out.annotated_ORs
-    // //         .join(full_GWAS_hg19, by: [0])
-    // //         .join(enhancer_plus_GWAS_coords.map{it->[it[0],it[1]]}, by: [0]) //initial ENH_P list
-    // // )
 
     // PLINK_base_GWAS_QC_and_clump (
     //     full_GWAS_HCMformat
