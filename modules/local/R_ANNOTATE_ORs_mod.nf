@@ -8,9 +8,10 @@ process R_ANNOTATE_ORs {
 
     input:
     //[SCZ, SCZ_ORs_PLINK2_logistic_firth_fallback_covar_recessive.PHENO1.glm.logistic.hybrid, SCZ_ORs_PLINK2_logistic_firth_fallback_covar_standard.PHENO1.glm.logistic.hybrid, 
-        // ENH_SCZ_hg19.csv, /rds/general/user/eosimo/home/largedirs/scz_GWAS/PGC3_SCZ_wave3.european.autosome.public.v3_HCM_format.tsv.gz]
+        // SCZ_ORs_PLINK2_logistic_firth_fallback_covar_dominant.PHENO1.glm.logistic.hybrid, SCZ_ORs_PLINK2_logistic_firth_fallback_covar_recessive.frq, 
+        // /rds/general/user/eosimo/home/largedirs/scz_GWAS/PGC3_SCZ_wave3.european.autosome.public.v3_overInfo.8_OR.tsv.gz]
     tuple val(condition), path(PLINK_ORs_recessive),  path(PLINK_ORs_additive),  \
-        path(PLINK_ORs_dominant),  path(full_GWAS), path(SNP_frq)
+        path(PLINK_ORs_dominant),   path(SNP_frq), path(full_GWAS)
 
 
     output:
