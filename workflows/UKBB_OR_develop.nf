@@ -63,6 +63,7 @@ LD_reference = Channel.from("bed","bim","fam")
 
 
 workflow UKBB_OR_develop {
+    // ################################ EPWAS development ################################
     GENERATESNPLISTS( 
         // THIS MODULE IMPORTS E-PS LIST (hg38) AND GWAS results (hg19), converts them to hg 19 and merges them
         // outputting bed files
@@ -156,25 +157,25 @@ workflow UKBB_OR_develop {
         // out: tuple val(meta), path("*_annotated_ORs.csv"),       emit: annotated_ORs
     )
     
+// ################################ INTERNAL VALIDATION ################################
 
-
-    // PLINK_base_GWAS_QC_and_clump (
-    //     full_GWAS_HCMformat
-    //         .combine(LD_reference)
-    //         .map { it.flatten() }
-    // )
+    PLINK_base_GWAS_QC_and_clump (
+        full_GWAS_HCMformat
+            .combine(LD_reference)
+            .map { it.flatten() }
+    )
     
     
 
-//     R_extract_GWAS_SNPs_into_bed ( 
-//         // THIS MODULE IMPORTS 
-//         // GWAS (hg19), and selects all SNPs in input bed files and all GWAS clumped SNPs and outputs a bed file
-//         enhancer_lists_bed_files.map{it -> it[1]}.mix(Channel.fromPath("./input/EPWAS/EP_WAS.bed")).collect(),
-//         PLINK_base_GWAS_QC_and_clump.out.GWAS_QC_noClump
-//             .combine(PLINK_base_GWAS_QC_and_clump.out.clumped_SNPs)
-//             .map { [it, condition].flatten() }
+    // R_extract_GWAS_SNPs_into_bed ( 
+    //     // THIS MODULE IMPORTS 
+    //     // GWAS (hg19), and selects all SNPs in input bed files and all GWAS clumped SNPs and outputs a bed file
+    //     enhancer_lists_bed_files.map{it -> it[1]}.mix(Channel.fromPath("./input/EPWAS/EP_WAS.bed")).collect(),
+    //     PLINK_base_GWAS_QC_and_clump.out.GWAS_QC_noClump
+    //         .combine(PLINK_base_GWAS_QC_and_clump.out.clumped_SNPs)
+    //         .map { [it, condition].flatten() }
         
-//         )
+    //     )
 //     // R_extract_GWAS_SNPs_into_bed.out.clumped_GWAS_SNPs_plus_those_in_bed_files
 //     //     .combine(R_extract_GWAS_SNPs_into_bed.out.clumped_GWAS)
 //     //     .view()
