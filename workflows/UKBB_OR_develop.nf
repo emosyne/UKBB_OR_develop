@@ -20,7 +20,7 @@ include { R_plot_GO }                       from '../modules/local/R_plot_GO.nf'
 
 
 
-enhancer_plus_GWAS_coords = Channel.from("SCZ") //,"HCM"
+enhancer_plus_GWAS_coords = Channel.from("SCZ") 
     .map { condition -> ["${condition}", 
            file("./input/textfiles/ENH_${condition}_hg38.csv.gz", checkIfExists: true), 
            file("$GWAS_dir/PGC3_SCZ_wave3.european.autosome.public.v3_overInfo.8_OR.tsv.gz", checkIfExists: true), 
@@ -29,11 +29,12 @@ enhancer_plus_GWAS_coords = Channel.from("SCZ") //,"HCM"
 
 
 
-//  SCHIZO and neural lists ##############
 full_GWAS_hg19 = Channel
     .fromPath("$GWAS_dir/PGC3_SCZ_wave3.european.autosome.public.v3_overInfo.8_OR.tsv.gz", checkIfExists: true) 
     .map{it-> ["SCZ", it]}
-
+full_GWAS_HCMformat = Channel
+    .fromPath("$GWAS_dir/PGC3_SCZ_wave3.european.autosome.public.v3_HCM_format.tsv.gz", checkIfExists: true) 
+    .map{it-> ["SCZ", it]}
 
 
 // chain file
@@ -142,32 +143,31 @@ workflow UKBB_OR_develop {
 
         //out tuple val(meta), path ("*_ORs_PLINK2_logistic_firth_fallback_covar_recessive.PHENO1.glm.logistic.hybrid"), path ("*_ORs_PLINK2_logistic_firth_fallback_covar_standard.PHENO1.glm.logistic.hybrid"), emit: associations
         )
-        // PLINK2_ASSOC_GLM.out.associations // ORs [SCZ, /rds/general/ephemeral/user/eosimo/ephemeral/UKBB_OR_develop/work/ed/61a5a66ddb71ab22a2c860a368b432/SCZ_ORs_PLINK2_logistic_firth_fallback_covar_recessive.PHENO1.glm.logistic.hybrid, /rds/general/ephemeral/user/eosimo/ephemeral/UKBB_OR_develop/work/ed/61a5a66ddb71ab22a2c860a368b432/SCZ_ORs_PLINK2_logistic_firth_fallback_covar_standard.PHENO1.glm.logistic.hybrid]
-        //     .join(GENERATESNPLISTS.out.processed_ENH_SNP_lists_hg19.map{it->[it[0],it[4]]}, by: [0])//join ENH hg19 csv file
-        //     .join(full_GWAS_hg19, by: [0]) //join full GWAS by condition
-        //     .view() //[SCZ, /rds/general/ephemeral/user/eosimo/ephemeral/UKBB_OR_develop/work/ed/61a5a66ddb71ab22a2c860a368b432/SCZ_ORs_PLINK2_logistic_firth_fallback_covar_recessive.PHENO1.glm.logistic.hybrid, /rds/general/ephemeral/user/eosimo/ephemeral/UKBB_OR_develop/work/ed/61a5a66ddb71ab22a2c860a368b432/SCZ_ORs_PLINK2_logistic_firth_fallback_covar_standard.PHENO1.glm.logistic.hybrid, /rds/general/ephemeral/user/eosimo/ephemeral/UKBB_OR_develop/work/4e/fc02bef580148888c104f3ea7c06ed/ENH_SCZ_hg19.csv, /rds/general/user/eosimo/home/largedirs/scz_GWAS/PGC3_SCZ_wave3.european.autosome.public.v3_HCM_format.tsv.gz]
+         PLINK2_ASSOC_GLM.out.associations // ORs
+            .join(full_GWAS_hg19, by: [0]) //join full GWAS by condition
+            .view() //[SCZ, /rds/general/ephemeral/user/eosimo/ephemeral/UKBB_OR_develop/work/ed/61a5a66ddb71ab22a2c860a368b432/SCZ_ORs_PLINK2_logistic_firth_fallback_covar_recessive.PHENO1.glm.logistic.hybrid, /rds/general/ephemeral/user/eosimo/ephemeral/UKBB_OR_develop/work/ed/61a5a66ddb71ab22a2c860a368b432/SCZ_ORs_PLINK2_logistic_firth_fallback_covar_standard.PHENO1.glm.logistic.hybrid, /rds/general/ephemeral/user/eosimo/ephemeral/UKBB_OR_develop/work/4e/fc02bef580148888c104f3ea7c06ed/ENH_SCZ_hg19.csv, /rds/general/user/eosimo/home/largedirs/scz_GWAS/PGC3_SCZ_wave3.european.autosome.public.v3_HCM_format.tsv.gz]
     
-    R_ANNOTATE_ORs(
-        // annotate ORs from previous step with GWAS results and other info,
-        //produce OR plots
-        PLINK2_ASSOC_GLM.out.associations // ORs
-            .join(full_GWAS_hg19, by: [0]), //join full GWAS by condition
+    // R_ANNOTATE_ORs(
+    //     // annotate ORs from previous step with GWAS results and other info,
+    //     //produce OR plots
+    //     PLINK2_ASSOC_GLM.out.associations // ORs
+    //         .join(full_GWAS_hg19, by: [0]) //join full GWAS by condition
         
-        // out: tuple val(meta), path("*_annotated_ORs.csv"),       emit: annotated_ORs
-    )
+    //     // out: tuple val(meta), path("*_annotated_ORs.csv"),       emit: annotated_ORs
+    // )
     
 
-//     // R_plot_GO (
-//     //     R_ANNOTATE_ORs.out.annotated_ORs
-//     //         .join(full_GWAS_hg19, by: [0])
-//     //         .join(enhancer_plus_GWAS_coords.map{it->[it[0],it[1]]}, by: [0]) //initial ENH_P list
-//     // )
+    // // R_plot_GO (
+    // //     R_ANNOTATE_ORs.out.annotated_ORs
+    // //         .join(full_GWAS_hg19, by: [0])
+    // //         .join(enhancer_plus_GWAS_coords.map{it->[it[0],it[1]]}, by: [0]) //initial ENH_P list
+    // // )
 
-//     PLINK_base_GWAS_QC_and_clump (
-//         full_GWAS_hg19
-//             .combine(LD_reference)
-//             .map { [it, condition].flatten() }
-//     )
+    // PLINK_base_GWAS_QC_and_clump (
+    //     full_GWAS_HCMformat
+    //         .combine(LD_reference)
+    //         .map { it.flatten() }
+    // )
     
     
 
