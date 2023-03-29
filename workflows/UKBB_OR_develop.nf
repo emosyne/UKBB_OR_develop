@@ -67,25 +67,13 @@ enhancer_lists_bed_files =
 
 workflow UKBB_OR_develop {
     
-//     // ################################ EPWAS development ################################
-//     GENERATESNPLISTS( 
-//         // THIS MODULE IMPORTS E-PS LIST (hg38) AND GWAS results (hg19), converts them to hg 19 and merges them
-//         // outputting bed files
-//         enhancer_lists_bed_files.mix(full_GWAS_HCMformat) 
-
-//         //out tuple val(meta), path("GWAS_*_hg19.bed"), path("ENH_*_hg19.bed"), path(pheno), path("ENH_*_hg19.csv"), emit: processed_ENH_SNP_lists_hg19
-//         )
-//     GENERATESNPLISTS.out.processed_ENH_SNP_lists_hg19.view()
-    
-//     chromosomes_by_condition_plus_SNPs = 
-//         GENERATESNPLISTS.out.processed_ENH_SNP_lists_hg19
-//             .combine(genotype_chr_files) //The combine operator combines (cartesian product) the items emitted by two channels
-//             // .view()
-        
+     // ################################ EPWAS development ################################
+    full_GWAS_HCMformat
+            .mix(LD_reference)
+            .view()
     PLINK_base_GWAS_QC_and_clump (
         full_GWAS_HCMformat
-            .combine(LD_reference)
-            .map { [it, condition].flatten() }
+            .mix(LD_reference)
     )
     
     
@@ -96,7 +84,6 @@ workflow UKBB_OR_develop {
         enhancer_lists_bed_files.map{it -> it[1]}.collect(),
         PLINK_base_GWAS_QC_and_clump.out.GWAS_QC_noClump
             .combine(PLINK_base_GWAS_QC_and_clump.out.clumped_SNPs)
-            .map { [it, condition].flatten() }
         )
     
     chromosomes_by_condition_plus_SNPs = 
