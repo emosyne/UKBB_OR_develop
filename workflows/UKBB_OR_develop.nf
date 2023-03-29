@@ -70,34 +70,35 @@ workflow UKBB_OR_develop {
      // ################################ EPWAS development ################################
     full_GWAS_HCMformat
             .mix(LD_reference)
+            .map{it.flatten()}
             .view()
-    PLINK_base_GWAS_QC_and_clump (
-        full_GWAS_HCMformat
-            .mix(LD_reference)
-    )
+    // PLINK_base_GWAS_QC_and_clump (
+    //     full_GWAS_HCMformat
+    //         .mix(LD_reference)
+    // )
     
     
 
-    R_extract_GWAS_SNPs_into_bed ( 
-        // THIS MODULE IMPORTS 
-        // GWAS (hg19), and selects all SNPs in input bed files and all GWAS clumped SNPs and outputs a bed file
-        enhancer_lists_bed_files.map{it -> it[1]}.collect(),
-        PLINK_base_GWAS_QC_and_clump.out.GWAS_QC_noClump
-            .combine(PLINK_base_GWAS_QC_and_clump.out.clumped_SNPs)
-        )
+    // R_extract_GWAS_SNPs_into_bed ( 
+    //     // THIS MODULE IMPORTS 
+    //     // GWAS (hg19), and selects all SNPs in input bed files and all GWAS clumped SNPs and outputs a bed file
+    //     enhancer_lists_bed_files.map{it -> it[1]}.collect(),
+    //     PLINK_base_GWAS_QC_and_clump.out.GWAS_QC_noClump
+    //         .combine(PLINK_base_GWAS_QC_and_clump.out.clumped_SNPs)
+    //     )
     
-    chromosomes_by_condition_plus_SNPs = 
-        R_extract_GWAS_SNPs_into_bed.out.clumped_GWAS_SNPs_plus_those_in_bed_files
-            .combine(genotype_chr_files) //The combine operator combines (cartesian product) the items emitted by two channels
+    // chromosomes_by_condition_plus_SNPs = 
+    //     R_extract_GWAS_SNPs_into_bed.out.clumped_GWAS_SNPs_plus_those_in_bed_files
+    //         .combine(genotype_chr_files) //The combine operator combines (cartesian product) the items emitted by two channels
             
         
-    chromosomes_by_condition_plus_SNPs.view()
-    PLINK2_EXTRACT ( 
-        // extract genotypes at bed file locations
-        chromosomes_by_condition_plus_SNPs
+    // chromosomes_by_condition_plus_SNPs.view()
+    // PLINK2_EXTRACT ( 
+    //     // extract genotypes at bed file locations
+    //     chromosomes_by_condition_plus_SNPs
 
-        //out tuple val(meta), path("*.bim"), path("*.bed"), path ("*.fam"), path("*.log"), emit: SNPextracted_by_chromosome
-        )
+    //     //out tuple val(meta), path("*.bim"), path("*.bed"), path ("*.fam"), path("*.log"), emit: SNPextracted_by_chromosome
+    //     )
     
 //     // PLINK2_EXTRACT.out.SNPextracted_by_chromosome.view()
 //     // [SCZ, GWAS_SCZ_SNV_merge_hg19_ukb22828_c17_b0_v3.bim, GWAS_SCZ_SNV_merge_hg19_ukb22828_c17_b0_v3.bed, GWAS_SCZ_SNV_merge_hg19_ukb22828_c17_b0_v3.fam, GWAS_SCZ_SNV_merge_hg19_ukb22828_c17_b0_v3.log]
