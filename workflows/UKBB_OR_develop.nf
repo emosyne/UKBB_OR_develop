@@ -88,7 +88,12 @@ workflow UKBB_OR_develop {
     //     GENERATESNPLISTS.out.processed_ENH_SNP_lists_hg19
     //         .combine(genotype_chr_files) //The combine operator combines (cartesian product) the items emitted by two channels
     //         // .view()
+    chromosomes_by_condition_plus_SNPs = 
+        R_extract_GWAS_SNPs_into_bed.out.clumped_GWAS_SNPs_plus_those_in_bed_files
+            .combine(genotype_chr_files) //The combine operator combines (cartesian product) the items emitted by two channels
+            
         
+    chromosomes_by_condition_plus_SNPs.view()
 
 
     PLINK2_EXTRACT ( 
@@ -187,12 +192,7 @@ workflow UKBB_OR_develop {
     // // R_extract_GWAS_SNPs_into_bed.out.clumped_GWAS_SNPs_plus_those_in_bed_files
     // //     .combine(R_extract_GWAS_SNPs_into_bed.out.clumped_GWAS)
     // //     .view()
-    chromosomes_by_condition_plus_SNPs = 
-        R_extract_GWAS_SNPs_into_bed.out.clumped_GWAS_SNPs_plus_those_in_bed_files
-            .combine(genotype_chr_files) //The combine operator combines (cartesian product) the items emitted by two channels
-            
-        
-    chromosomes_by_condition_plus_SNPs.view()
+    
 
 //     // GENERATE UKBB UNIQUE FILE
 //     PLINK2_EXTRACT ( 
