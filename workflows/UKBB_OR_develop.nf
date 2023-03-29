@@ -53,14 +53,7 @@ genotype_chr_files = Channel
 UKBBethinicityRelatedness = Channel.fromPath( './input/biobank/EIDs_nonBritIrish_includingsecondary_or_related_over_king125.tsv' , checkIfExists: true)
 UKBB_covariates = Channel.fromPath( './input/biobank/non_missing_10PCs_Jun22.covariate.gz', checkIfExists: true)
 UKBB_rs34380086_cases = Channel.fromPath( './input/biobank/rs34380086_cases.pheno', checkIfExists: true)
-// LD_reference = Channel.from("bed","bim","fam") 
-//     .map { ext -> ["${ext}", 
-//             file("/mnt/storage/emanuele/LDblocks/1000genomes/EUR_phase3_autosomes_hg19.${ext}")] }
-//             .collect()
-// LD_reference2 = Channel
-//         .empty()
-//         .mix(LD_reference.map{it-> ["SCZ", it[1],it[3],it[5]]})
-//         .mix(LD_reference.map{it-> ["HCM", it[1],it[3],it[5]]})
+
 
 //LD ref
 LD_reference = Channel.from("bed","bim","fam") 
@@ -158,128 +151,181 @@ workflow UKBB_OR_develop {
         // annotate ORs from previous step with GWAS results and other info,
         //produce OR plots
         PLINK2_ASSOC_GLM.out.associations // ORs
-            .join(GENERATESNPLISTS.out.processed_ENH_SNP_lists_hg19.map{it->[it[0],it[4]]}, by: [0])//join ENH hg19 csv file
             .join(full_GWAS_hg19, by: [0]), //join full GWAS by condition
-     
-        hg38ToHg19_chain,
-        GW_LD_blocks
         
         // out: tuple val(meta), path("*_annotated_ORs.csv"),       emit: annotated_ORs
     )
-    // R_ANNOTATE_ORs.out.annotated_ORs.view()
     
-    // PLINK2_QC_PRUNE_HET (
-    //     PLINK_MERGE.out.all_chromosomes_extracted
+
+//     // R_plot_GO (
+//     //     R_ANNOTATE_ORs.out.annotated_ORs
+//     //         .join(full_GWAS_hg19, by: [0])
+//     //         .join(enhancer_plus_GWAS_coords.map{it->[it[0],it[1]]}, by: [0]) //initial ENH_P list
+//     // )
+
+//     PLINK_base_GWAS_QC_and_clump (
+//         full_GWAS_hg19
+//             .combine(LD_reference)
+//             .map { [it, condition].flatten() }
+//     )
+    
+    
+
+//     R_extract_GWAS_SNPs_into_bed ( 
+//         // THIS MODULE IMPORTS 
+//         // GWAS (hg19), and selects all SNPs in input bed files and all GWAS clumped SNPs and outputs a bed file
+//         enhancer_lists_bed_files.map{it -> it[1]}.mix(Channel.fromPath("./input/EPWAS/EP_WAS.bed")).collect(),
+//         PLINK_base_GWAS_QC_and_clump.out.GWAS_QC_noClump
+//             .combine(PLINK_base_GWAS_QC_and_clump.out.clumped_SNPs)
+//             .map { [it, condition].flatten() }
         
-    //     //out tuple val(meta), path ("*.prune.in"), path ("*.het"), emit: pruned_variants_het
-    // )
-    // R_PRS_QC (
-    //     PLINK2_QC_PRUNE_HET.out.pruned_variants_het         //het file
-    //         .join(PLINK_MERGE.out.all_chromosomes_extracted, by: [0]) //join merged genotype files
-    //         .join(full_GWAS_hg19, by: [0])                       //join full GWAS by condition
+//         )
+//     // R_extract_GWAS_SNPs_into_bed.out.clumped_GWAS_SNPs_plus_those_in_bed_files
+//     //     .combine(R_extract_GWAS_SNPs_into_bed.out.clumped_GWAS)
+//     //     .view()
+//     chromosomes_by_condition_plus_SNPs = 
+//         // PGC_GWAS_plus_allEPlists_SNPs_hg19
+//         R_extract_GWAS_SNPs_into_bed.out.clumped_GWAS_SNPs_plus_those_in_bed_files
+//             .combine(genotype_chr_files) //The combine operator combines (cartesian product) the items emitted by two channels
+            
         
-    //     //out tuple val(meta), path ("*_het_valid_out.sample"), path("*_a1_bim"), path("*_mismatching_SNPs"),  emit: QC_het_a1_mismatch
-    // )
+//     // chromosomes_by_condition_plus_SNPs.view()
 
-    // PLINK_PRODUCE_QC_DATASET (
-    //     PLINK_MERGE.out.all_chromosomes_extracted
-    //         .join(R_PRS_QC.out.QC_het_a1_mismatch, by: [0]) //join het, A1 bim, mismatching SNPs from previous step
-    //         // .view()
-    //     //out tuple val(meta), path ("*.bed"), path ("*.bim"), path ("*.fam"), path ("*.log") , emit: all_chromosomes_QC
-    // )
+//     // GENERATE UKBB UNIQUE FILE
+//     PLINK2_EXTRACT ( 
+//         // extract genotypes at bed file locations
+//         chromosomes_by_condition_plus_SNPs
 
-    // R_PREPARE_MODIF_PRS (
-    //     full_GWAS_hg19                                      // full GWAS by condition
-    //         .join(R_ANNOTATE_ORs.out.annotated_ORs, by: [0]),// *_annotated_ORs.csv
-    //     // GW_LD_blocks
-    //     // out tuple val(meta),  path("*_original_dedup_GWAS.tsv"), path("*_substituted_GWAS.tsv"), path("*_tissue_EPeQTL_associations.tsv"), path("*_tissue_facet_associations.tsv"), path("*_all_TS_EPs_associations.tsv"), path("*_merged_GWAS.tsv"), path("*_all_TS_EPs_ZEROP_associations.tsv"), emit: orig_and_modified_GWASes
-    // )
+//         //out tuple val(meta), path("*.bim"), path("*.bed"), path ("*.fam"),  emit: SNPextracted_by_chromosome
+//         )
+    
+    
 
-    // PLINK_clump (
-    //     //tuple val(meta),  path("*_original_dedup_GWAS.tsv"), path("*_substituted_GWAS.tsv"), path("*_tissue_EPeQTL_associations.tsv"), path("*_tissue_facet_associations.tsv"), path("*_all_TS_EPs_associations.tsv"), path("*_merged_GWAS.tsv"), path("*_all_TS_EPs_ZEROP_associations.tsv"), emit: orig_and_modified_GWASes
-    //     R_PREPARE_MODIF_PRS.out.orig_and_modified_GWASes    // merged_GWAS for clumping
-    //         .join(LD_reference, by: [0])                   //bed bim fam 1000 genomes ref files by DX
-        
-    // )
+//     PLINK_MERGE( // SETTING TO BE RESTORED FOR RUNNING IN IMPERIAL
+//         // merge all bed files into one:
+//         PLINK2_EXTRACT.out.SNPextracted_by_chromosome.collect(),
+//         UKBBethinicityRelatedness,
+//         dx_UKBB_pheno
+//         //out tuplepath ("*.bed"), path ("*.bim"), path ("*.fam"),  emit: all_chromosomes_extracted
+//         )
+//     // PLINK_MERGE.out.all_chromosomes_extracted.view()
 
-    // R_PREPARE_MODIF_PRS_2_LISTS (
-    //     PLINK_clump.out.clumped_SNPs 
-    //         .join(R_PREPARE_MODIF_PRS.out.orig_and_modified_GWASes, by: [0])
-    //     //out tuple val(meta),  path("*_original_NoEPs_associations_clumped.tsv"), path("*_NonOverlapOriginal_TS_EPs_associations_clumped.tsv"), emit: split_GWASes
-    // )
+//     // TARGET QC 1: PRUNE AND HETEROZIGOSITY CALCULATIONS
+//     // produce prune.in and het files
+//     PLINK2_QC_PRUNE_HET (
+//         PLINK_MERGE.out.all_chromosomes_extracted
+//     )
+    
+//     // PLINK2_QC_PRUNE_HET.out.pruned_variants_het
+//     //         .combine(PLINK_base_GWAS_QC_and_clump.out.GWAS_QC)
+//     //         .view()
+//     // [/Users/eosimo/GoogleDrive/WORK/CF_PhD/NF_2HH/HCM_cardiac_enhs/work/a1/7a67040dfa3a47d6677a6e9f003f56/GWAS_ENH_SNPs_hg19_ALLCHR.bed, /Users/eosimo/GoogleDrive/WORK/CF_PhD/NF_2HH/HCM_cardiac_enhs/work/a1/7a67040dfa3a47d6677a6e9f003f56/GWAS_ENH_SNPs_hg19_ALLCHR.bim, /Users/eosimo/GoogleDrive/WORK/CF_PhD/NF_2HH/HCM_cardiac_enhs/work/a1/7a67040dfa3a47d6677a6e9f003f56/GWAS_ENH_SNPs_hg19_ALLCHR.fam, /Users/eosimo/GoogleDrive/WORK/CF_PhD/NF_2HH/HCM_cardiac_enhs/work/a1/7a67040dfa3a47d6677a6e9f003f56/GWAS_ENH_SNPs_hg19_ALLCHR.prune.in, /Users/eosimo/GoogleDrive/WORK/CF_PhD/NF_2HH/HCM_cardiac_enhs/work/a1/7a67040dfa3a47d6677a6e9f003f56/GWAS_ENH_SNPs_hg19_ALLCHR.het, /Users/eosimo/GoogleDrive/WORK/CF_PhD/NF_2HH/HCM_cardiac_enhs/work/0b/036c27bada52d3b859916ac5896889/GWAS_QC.gz]
+
+//     // TARGET QC 2:  remove heterogeneity outliers, produced A1 alleles, and mismatching SNPs list to be removed
+//     // produce QC_het_a1_mismatch, 
+//     R_PRS_QC ( // calculates mismatching SNPs and recodes all alleles to GWAS base
+//         PLINK2_QC_PRUNE_HET.out.pruned_variants_het
+//             .combine(PLINK_base_GWAS_QC_and_clump.out.GWAS_QC_noClump)
+//             .map { [it, condition].flatten() }
+//     )
+//     // R_PRS_QC.out.QC_het_a1_mismatch.view()
+//     //[/rds/general/ephemeral/user/eosimo/ephemeral/HCM_cardiac_enhs/work/16/7e26f02ebc884d13aa58e154e8c3a7/GWAS_ENH_SNPs_hg19_ALLCHR.bed, /rds/general/ephemeral/user/eosimo/ephemeral/HCM_cardiac_enhs/work/16/7e26f02ebc884d13aa58e154e8c3a7/GWAS_ENH_SNPs_hg19_ALLCHR.bim, /rds/general/ephemeral/user/eosimo/ephemeral/HCM_cardiac_enhs/work/16/7e26f02ebc884d13aa58e154e8c3a7/GWAS_ENH_SNPs_hg19_ALLCHR.fam, /rds/general/ephemeral/user/eosimo/ephemeral/HCM_cardiac_enhs/work/16/7e26f02ebc884d13aa58e154e8c3a7/SCZ_GWAS_QC_nodups.tsv.gz, /rds/general/ephemeral/user/eosimo/ephemeral/HCM_cardiac_enhs/work/16/7e26f02ebc884d13aa58e154e8c3a7/SCZ_het_valid_out_vs_HCM_GWAS.sample, /rds/general/ephemeral/user/eosimo/ephemeral/HCM_cardiac_enhs/work/16/7e26f02ebc884d13aa58e154e8c3a7/SCZ_a1_cohort_bim_vs_HCM_GWAS, /rds/general/ephemeral/user/eosimo/ephemeral/HCM_cardiac_enhs/work/16/7e26f02ebc884d13aa58e154e8c3a7/SCZ_mismatching_SNPs_vs_HCM_GWAS, SCZ]
+
+//     // TARGET QC 3:  
+//     // Remove individuals with heterozigosity F coefficients that are more than 3 standard deviation (SD) units from the mean
+//     // also remove mismatching SNPs
+//     // also standard QC --maf 0.01 --mac 100 --geno 0.1 --hwe 1e-15 --mind 0.1 
+//     PLINK_PRODUCE_QC_DATASET ( //   SETTING TO BE RESTORED FOR RUNNING IN IMPERIAL     --maf 0.01 --mac 100 --geno 0.1 --hwe 1e-15 --mind 0.1 \\
+
+//         R_PRS_QC.out.QC_het_a1_mismatch
+//     )
+
+//     // PLINK_PRODUCE_QC_DATASET.out.target_QC.view()
+//     //[GWAS_ENH_SNPs_hg19_ALLCHR_QC.bed, GWAS_ENH_SNPs_hg19_ALLCHR_QC.bim, GWAS_ENH_SNPs_hg19_ALLCHR_QC.fam, GWAS_QC.gz]
+    
+    
+//     PLINK_PRODUCE_QC_DATASET.out.target_QC
+//         .combine(enhancer_lists_bed_files)
+//         .combine(enhancer_EPWAS_files)
+//         .map { it.flatten() }
+//         .set{cohort_GWAS_enh_list}
+    
+//     // cohort_GWAS_enh_list.view()
+//     // [GWAS_ENH_SNPs_hg19_ALLCHR_SCZ_QC.bed, GWAS_ENH_SNPs_hg19_ALLCHR_SCZ_QC.bim, GWAS_ENH_SNPs_hg19_ALLCHR_SCZ_QC.fam, SCZ_GWAS_QC_nodups.tsv.gz, SCZ, Neural_significant_enh, /rds/general/ephemeral/user/eosimo/ephemeral/HCM_cardiac_enhs/input/enh_bedfiles/Neural_significant_enh.bed, REC, /rds/general/ephemeral/user/eosimo/ephemeral/HCM_cardiac_enhs/input/EPWAS/UKBB_ENH_associations_REC.tsv.gz]
+//     // [GWAS_ENH_SNPs_hg19_ALLCHR_SCZ_QC.bed, GWAS_ENH_SNPs_hg19_ALLCHR_SCZ_QC.bim, GWAS_ENH_SNPs_hg19_ALLCHR_SCZ_QC.fam, SCZ_GWAS_QC_nodups.tsv.gz, SCZ, Neural_significant_enh, /rds/general/ephemeral/user/eosimo/ephemeral/HCM_cardiac_enhs/input/enh_bedfiles/Neural_significant_enh.bed, DOM, /rds/general/ephemeral/user/eosimo/ephemeral/HCM_cardiac_enhs/input/EPWAS/UKBB_ENH_associations_DOM.tsv.gz]
+//     // [GWAS_ENH_SNPs_hg19_ALLCHR_SCZ_QC.bed, GWAS_ENH_SNPs_hg19_ALLCHR_SCZ_QC.bim, GWAS_ENH_SNPs_hg19_ALLCHR_SCZ_QC.fam, SCZ_GWAS_QC_nodups.tsv.gz, SCZ, Neural_significant_enh, /rds/general/ephemeral/user/eosimo/ephemeral/HCM_cardiac_enhs/input/enh_bedfiles/Neural_significant_enh.bed, ADD, /rds/general/ephemeral/user/eosimo/ephemeral/HCM_cardiac_enhs/input/EPWAS/UKBB_ENH_associations_ADD.tsv.gz]
+    
+//     // BASE subsetting
+//     R_prepare_lists_for_clump (
+//         // SUBSETS GWAS SNPS INTO ENH COMPARTMENT AND RESIDUAL COMPARTMENT.
+//         // ########################### IN PREPARATION FOR CLUMPING, DIVIDE P VALUES FOR ENH SNPS BY X TO PRESERVE ENH SNPS ###########################
+//         cohort_GWAS_enh_list
+//     )
+    
+    
+//     //    R_prepare_lists_for_clump.out.lists_before_clump
+//     //         .combine(LD_reference)
+//     //         .view()
+//     // [/rds/general/ephemeral/user/eosimo/ephemeral/HCM_cardiac_enhs/work/8c/5832511f6ff56c817623ff8511e5a4/GWAS_ENH_SNPs_hg19_ALLCHR_SCZ_QC.bed, /rds/general/ephemeral/user/eosimo/ephemeral/HCM_cardiac_enhs/work/8c/5832511f6ff56c817623ff8511e5a4/GWAS_ENH_SNPs_hg19_ALLCHR_SCZ_QC.bim, /rds/general/ephemeral/user/eosimo/ephemeral/HCM_cardiac_enhs/work/8c/5832511f6ff56c817623ff8511e5a4/GWAS_ENH_SNPs_hg19_ALLCHR_SCZ_QC.fam, Neural_significant_enh, /rds/general/ephemeral/user/eosimo/ephemeral/HCM_cardiac_enhs/work/8c/5832511f6ff56c817623ff8511e5a4/SCZ_REC_Neural_significant_enh_noclump_EPWAS.tsv.gz, /rds/general/ephemeral/user/eosimo/ephemeral/HCM_cardiac_enhs/work/8c/5832511f6ff56c817623ff8511e5a4/SCZ_REC_Neural_significant_enh_noclump_residual_GWAS_compartment.tsv.gz, SCZ, REC, /rds/general/user/eosimo/home/lenhard_prs/LD_ref/EUR_phase3_autosomes_hg19.bed, /rds/general/user/eosimo/home/lenhard_prs/LD_ref/EUR_phase3_autosomes_hg19.bim, /rds/general/user/eosimo/home/lenhard_prs/LD_ref/EUR_phase3_autosomes_hg19.fam]
+//     // [/rds/general/ephemeral/user/eosimo/ephemeral/HCM_cardiac_enhs/work/ce/148eaf9bc44e293f60bb7e97ca30b7/GWAS_ENH_SNPs_hg19_ALLCHR_SCZ_QC.bed, /rds/general/ephemeral/user/eosimo/ephemeral/HCM_cardiac_enhs/work/ce/148eaf9bc44e293f60bb7e97ca30b7/GWAS_ENH_SNPs_hg19_ALLCHR_SCZ_QC.bim, /rds/general/ephemeral/user/eosimo/ephemeral/HCM_cardiac_enhs/work/ce/148eaf9bc44e293f60bb7e97ca30b7/GWAS_ENH_SNPs_hg19_ALLCHR_SCZ_QC.fam, Neural_significant_enh, /rds/general/ephemeral/user/eosimo/ephemeral/HCM_cardiac_enhs/work/ce/148eaf9bc44e293f60bb7e97ca30b7/SCZ_DOM_Neural_significant_enh_noclump_EPWAS.tsv.gz, /rds/general/ephemeral/user/eosimo/ephemeral/HCM_cardiac_enhs/work/ce/148eaf9bc44e293f60bb7e97ca30b7/SCZ_DOM_Neural_significant_enh_noclump_residual_GWAS_compartment.tsv.gz, SCZ, DOM, /rds/general/user/eosimo/home/lenhard_prs/LD_ref/EUR_phase3_autosomes_hg19.bed, /rds/general/user/eosimo/home/lenhard_prs/LD_ref/EUR_phase3_autosomes_hg19.bim, /rds/general/user/eosimo/home/lenhard_prs/LD_ref/EUR_phase3_autosomes_hg19.fam]
+    
+//     PLINK_clump (
+//         //CLUMPING of enhancer-based SNP compartments together 
+//         R_prepare_lists_for_clump.out.lists_before_clump
+//             .combine(LD_reference)
+//     )
+//     // PLINK_clump.out.clumped_SNPs_and_noclump_lists.view()
+//     // [/rds/general/ephemeral/user/eosimo/ephemeral/HCM_cardiac_enhs/work/82/3cd69072a998abd4ba99f1bae51356/GWAS_ENH_SNPs_hg19_ALLCHR_SCZ_QC.bed, /rds/general/ephemeral/user/eosimo/ephemeral/HCM_cardiac_enhs/work/82/3cd69072a998abd4ba99f1bae51356/GWAS_ENH_SNPs_hg19_ALLCHR_SCZ_QC.bim, /rds/general/ephemeral/user/eosimo/ephemeral/HCM_cardiac_enhs/work/82/3cd69072a998abd4ba99f1bae51356/GWAS_ENH_SNPs_hg19_ALLCHR_SCZ_QC.fam, Neural_significant_enh, /rds/general/ephemeral/user/eosimo/ephemeral/HCM_cardiac_enhs/work/82/3cd69072a998abd4ba99f1bae51356/SCZ_REC_Neural_significant_enh_noclump_EPWAS.tsv.gz, /rds/general/ephemeral/user/eosimo/ephemeral/HCM_cardiac_enhs/work/82/3cd69072a998abd4ba99f1bae51356/SCZ_REC_Neural_significant_enh_noclump_residual_GWAS_compartment.tsv.gz, /rds/general/ephemeral/user/eosimo/ephemeral/HCM_cardiac_enhs/work/82/3cd69072a998abd4ba99f1bae51356/SCZ_Neural_significant_enh_clumped_SNPs.clumped, SCZ, REC]
+    
+
+//     R_split_lists (
+//         // first annotate SNPs with ES of relevant E-P - for ENH SNP list
+//         // ##################################################### GENERATE MODIFIED ORS MULT BY ES OR EXP       ###########################################################
+//         // ##################################################### CAN MULTIPLY P BY VALUE TO RESTORE ENH SNPS P ###########################################################
+//         // output separate lists to calculate split PRSs and also merged one
+//         PLINK_clump.out.clumped_SNPs_and_noclump_lists,//.map { [it, "1"].flatten() }, //######################## multiplier can be set here ########################
+//         annotations
+//     )
 
     
-    // PRSice_calculate_PRS_original(
-    //     R_PREPARE_MODIF_PRS.out.orig_and_modified_GWASes          // modified and original deduplicated GWAS
-    //         //tuple tuple val(meta),  path("*_original_dedup_GWAS.tsv"), path("*_substituted_GWAS.tsv"), path("*_tissue_EPeQTL_associations.tsv"), path("*_tissue_facet_associations.tsv"), path("*_all_TS_EPs_associations.tsv"), path("*_merged_GWAS.tsv"), emit: orig_and_modified_GWASes
-    //         .join(PLINK_PRODUCE_QC_DATASET.out.all_chromosomes_QC, by: [0])         //QCed UKBB genotypes
-    //         //tuple val(meta), path ("*.bed"), path ("*.bim"), path ("*.fam"), path ("*.log") , emit: all_chromosomes_QC
-    //         .join(enhancer_plus_GWAS_coords.map{it->[it[0],it[3]]}, by: [0])       // also join pheno file
-    //         //tuple val(meta), pheno
-    //         .join(LD_reference2, by: [0]),
-    //         //bed bim fam 1000 genomes ref files by DX
-    //     UKBB_covariates,
-    //     UKBB_rs34380086_cases
-    // )
-    // // PRSice_calculate_PRS_substituted(
-    // //     R_PREPARE_MODIF_PRS.out.orig_and_modified_GWASes          // modified and original deduplicated GWAS
-    // //         //tuple val(meta),  path("*_original_dedup_GWAS.csv"), path("*_substituted_GWAS.csv"), path("*_tissue_EPeQTL_associations.csv"), path("*_tissue_facet_associations.csv"), path("*_all_TS_EPs_associations.csv"), path("*_original_NoEPs_associations.csv"), path("*_NonOverlapOriginal_TS_EPs_associations.csv"),   emit: orig_and_modified_GWASes
-    // //         .join(PLINK_PRODUCE_QC_DATASET.out.all_chromosomes_QC, by: [0])         //QCed UKBB genotypes
-    // //         //tuple val(meta), path ("*.bed"), path ("*.bim"), path ("*.fam"), path ("*.log") , emit: all_chromosomes_QC
-    // //         .join(enhancer_plus_GWAS_coords.map{it->[it[0],it[3]]}, by: [0])       // also join pheno file
-    // //         //tuple val(meta), pheno
-    // //         .join(LD_reference2, by: [0]),
-    // //         //bed bim fam 1000 genomes ref files by DX
-    // //     UKBB_covariates,
-    // //     UKBB_rs34380086_cases
-    // // )
-    // PRSice_calculate_PRS_TS_partition(
-    //     R_PREPARE_MODIF_PRS.out.orig_and_modified_GWASes          // modified and original deduplicated GWAS
-    //         //tuple val(meta),  path("*_original_dedup_GWAS.csv"), path("*_substituted_GWAS.csv"), path("*_tissue_EPeQTL_associations.csv"), path("*_tissue_facet_associations.csv"), path("*_all_TS_EPs_associations.csv"), path("*_original_NoEPs_associations.csv"), path("*_NonOverlapOriginal_TS_EPs_associations.csv"),   emit: orig_and_modified_GWASes
-    //         .join(PLINK_PRODUCE_QC_DATASET.out.all_chromosomes_QC, by: [0])         //QCed UKBB genotypes
-    //         //tuple val(meta), path ("*.bed"), path ("*.bim"), path ("*.fam"), path ("*.log") , emit: all_chromosomes_QC
-    //         .join(enhancer_plus_GWAS_coords.map{it->[it[0],it[3]]}, by: [0])       // also join pheno file
-    //         //tuple val(meta), pheno
-    //         .join(LD_reference2, by: [0]),
-    //         //bed bim fam 1000 genomes ref files by DX
-    //     UKBB_covariates,
-    //     UKBB_rs34380086_cases
-    // )
-    // PRSice_calculate_4_partition(
-    //     R_PREPARE_MODIF_PRS_2_LISTS.out.split_GWASes
-    //         //out tuple val(meta),  path("*_original_NoEPs_associations_clumped.tsv"), path("*_NonOverlapOriginal_TS_EPs_associations_clumped.tsv"), emit: split_GWASes
-    //         .join(PLINK_PRODUCE_QC_DATASET.out.all_chromosomes_QC, by: [0])         //QCed UKBB genotypes
-    //         //tuple val(meta), path ("*.bed"), path ("*.bim"), path ("*.fam"), path ("*.log") , emit: all_chromosomes_QC
-    //         .join(enhancer_plus_GWAS_coords.map{it->[it[0],it[3]]}, by: [0])       // also join pheno file
-    //         //tuple val(meta), pheno
-    //         .join(LD_reference2, by: [0]),
-    //         //bed bim fam 1000 genomes ref files by DX
-    //     UKBB_covariates,
-    //     UKBB_rs34380086_cases
-    // )
+//     R_split_lists.out.partitioned 
+//         .combine(R_extract_GWAS_SNPs_into_bed.out.clumped_GWAS)
+//         .combine(UKBB_covariates)
+//         .combine(LD_reference)
+//         .map { [it, "0.5"].flatten() }         // ######################## SET CT THRESHOLD FOR PRSICE ##################
+//         .set{combined_splitlists_bedfile_QCeddata_LDdata_05}
+//     R_split_lists.out.partitioned 
+//         .combine(R_extract_GWAS_SNPs_into_bed.out.clumped_GWAS)
+//         .combine(UKBB_covariates)
+//         .combine(LD_reference)
+//         .map { [it, "0.05"].flatten() }         // ######################## SET CT THRESHOLD FOR PRSICE ##################
+//         .set{combined_splitlists_bedfile_QCeddata_LDdata_005}
     
-    // R_PRS_PPV_plotting(
-    //     //tuple val(meta), path("*_original_PRS.summary"), path("*_original_PRS.prsice"), path("*_original_PRS.best")
-    //     PRSice_calculate_PRS_original.out.PRS_text_results
-    //         //tuple val(meta), path("*_REC_NonOverlapOriginal_TS_EPs_associations_partition_PLINKclump_PRS.summary"), path("*_REC_NonOverlapOriginal_TS_EPs_associations_partition_PLINKclump_PRS.prsice"), path("*_REC_NonOverlapOriginal_TS_EPs_associations_partition_PLINKclump_PRS.best"), path("*_ADD_original_NoEPs_associations_partition_PLINKclump_PRS.summary"), path("*_ADD_original_NoEPs_associations_partition_PLINKclump_PRS.prsice"), path("*_ADD_original_NoEPs_associations_partition_PLINKclump_PRS.best"), emit: PRS_text_split_results
-    //         .join(PRSice_calculate_4_partition.out.PRS_text_split_results, by: [0])
-    //         .join(PRSice_calculate_PRS_TS_partition.out.PRS_text_results, by: [0])
-    // )
+//     combined_splitlists_bedfile_QCeddata_LDdata = combined_splitlists_bedfile_QCeddata_LDdata_05.mix(combined_splitlists_bedfile_QCeddata_LDdata_005)
+//     // combined_splitlists_bedfile_QCeddata_LDdata.view()
+//     // [GWAS_ENH_SNPs_hg19_ALLCHR_SCZ_QC.bed, GWAS_ENH_SNPs_hg19_ALLCHR_SCZ_QC.bim, GWAS_ENH_SNPs_hg19_ALLCHR_SCZ_QC.fam, Neural_significant_enh, Neural_significant_enh_REC_SCZ_X_1_clumped_EPWAS.tsv.gz, Neural_significant_enh_REC_SCZ_clumped_residual_GWAS_compartment.tsv.gz, 1, SCZ, REC, /rds/general/ephemeral/user/eosimo/ephemeral/HCM_cardiac_enhs/work/b0/fcec9ad982f3a82c3b2bef76691d0a/SCZ_clumped_GWAS_QC_nodups.tsv.gz, /rds/general/ephemeral/user/eosimo/ephemeral/HCM_cardiac_enhs/input/biobank/non_missing_10PCs_Jun22.covariate.gz, /rds/general/user/eosimo/home/lenhard_prs/LD_ref/EUR_phase3_autosomes_hg19.bed, /rds/general/user/eosimo/home/lenhard_prs/LD_ref/EUR_phase3_autosomes_hg19.bim, /rds/general/user/eosimo/home/lenhard_prs/LD_ref/EUR_phase3_autosomes_hg19.fam, 0.05]
+//     // [GWAS_ENH_SNPs_hg19_ALLCHR_SCZ_QC.bed, GWAS_ENH_SNPs_hg19_ALLCHR_SCZ_QC.bim, GWAS_ENH_SNPs_hg19_ALLCHR_SCZ_QC.fam, Neural_significant_enh, Neural_significant_enh_REC_SCZ_X_1_clumped_EPWAS.tsv.gz, Neural_significant_enh_REC_SCZ_clumped_residual_GWAS_compartment.tsv.gz, 1, SCZ, REC, /rds/general/ephemeral/user/eosimo/ephemeral/HCM_cardiac_enhs/work/b0/fcec9ad982f3a82c3b2bef76691d0a/SCZ_clumped_GWAS_QC_nodups.tsv.gz, /rds/general/ephemeral/user/eosimo/ephemeral/HCM_cardiac_enhs/input/biobank/non_missing_10PCs_Jun22.covariate.gz, /rds/general/user/eosimo/home/lenhard_prs/LD_ref/EUR_phase3_autosomes_hg19.bed, /rds/general/user/eosimo/home/lenhard_prs/LD_ref/EUR_phase3_autosomes_hg19.bim, /rds/general/user/eosimo/home/lenhard_prs/LD_ref/EUR_phase3_autosomes_hg19.fam, 0.5]
 
-    // R_calculate_compound_PRS_fit_and_plot (
-    //     PRSice_calculate_4_partition.out.PRS_text_split_results
-    //         .join(PRSice_calculate_PRS_original.out.PRS_text_results, by: [0])
-    //         .join(enhancer_plus_GWAS_coords.map{it->[it[0],it[3]]}, by: [0]) // join Diagnosis
-
-    // )
-
-    // R_plot_GO (
-    //     R_ANNOTATE_ORs.out.annotated_ORs
-    //         .join(full_GWAS_hg19, by: [0])
-    //         .join(enhancer_plus_GWAS_coords.map{it->[it[0],it[1]]}, by: [0]) //initial ENH_P list
-    // )
+    
+//     PRSice_calculate_PRS_split_partitions(
+//         combined_splitlists_bedfile_QCeddata_LDdata
+//     )
+    
+//     // ########################################### SET NAMES OF MULTIPLIERS ###########################################
+//     PRS_results = 
+//         PRSice_calculate_PRS_split_partitions.out.clumped_TS_ENH_GWAS_compartment_PRS
+//             .join(PRSice_calculate_PRS_split_partitions.out.clumped_residual_GWAS_compartment_PRS)
+//             .join(PRSice_calculate_PRS_split_partitions.out.clumped_merged_GWAS_PRS)
+//             .join(PRSice_calculate_PRS_split_partitions.out.clumped_original_GWAS_PRS)
+//             .map { [it, "enh_ES", "enh_TS_tpm"].flatten() }
 
 
+//     PRS_results.view()
+    
+
+// //     R_final_plot (
+// //         PRS_results
+// //     )
 
 
 }
