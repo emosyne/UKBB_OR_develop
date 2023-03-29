@@ -196,7 +196,7 @@ ggsave(
 results_per_snp3 %>% select(seqnames,  start,end, SNP) %>%
   mutate(score=".", strand=".") %>%
   relocate(seqnames, start, end, SNP, score, strand) %>%
-  fwrite(file="EP_WAS.bed", sep="\t", col.names=F)
+  data.table::fwrite(file="EP_WAS.bed", sep="\t", col.names=F)
 
 # produce file in HCM GWAS format
 #SNP     A1      A2      Z       N       FRQ     P       POS     CHR     BETA    SE
