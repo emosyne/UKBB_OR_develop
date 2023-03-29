@@ -68,10 +68,7 @@ enhancer_lists_bed_files =
 workflow UKBB_OR_develop {
     
      // ################################ EPWAS development ################################
-    full_GWAS_HCMformat
-            .join(LD_reference)
-            .map{it.flatten()}
-            .view()
+
     PLINK_base_GWAS_QC_and_clump (
         full_GWAS_HCMformat
             .join(LD_reference)
@@ -80,13 +77,13 @@ workflow UKBB_OR_develop {
     
     
 
-    // R_extract_GWAS_SNPs_into_bed ( 
-    //     // THIS MODULE IMPORTS 
-    //     // GWAS (hg19), and selects all SNPs in input bed files and all GWAS clumped SNPs and outputs a bed file
-    //     enhancer_lists_bed_files.map{it -> it[1]}.collect(),
-    //     PLINK_base_GWAS_QC_and_clump.out.GWAS_QC_noClump
-    //         .combine(PLINK_base_GWAS_QC_and_clump.out.clumped_SNPs)
-    //     )
+    R_extract_GWAS_SNPs_into_bed ( 
+        // THIS MODULE IMPORTS 
+        // GWAS (hg19), and selects all SNPs in input bed files and all GWAS clumped SNPs and outputs a bed file
+        enhancer_lists_bed_files.map{it -> it[1]}.collect(),
+        PLINK_base_GWAS_QC_and_clump.out.GWAS_QC_noClump
+            .join(PLINK_base_GWAS_QC_and_clump.out.clumped_SNPs)
+        )
     
     // chromosomes_by_condition_plus_SNPs = 
     //     R_extract_GWAS_SNPs_into_bed.out.clumped_GWAS_SNPs_plus_those_in_bed_files

@@ -10,8 +10,8 @@ process PLINK_base_GWAS_QC_and_clump {
     
 
     output:
-    path ("*GWAS_QC_nodups.tsv.gz"),                 emit: GWAS_QC_noClump
-    path ("*GWAS_QC_nodups_clump.clumped"),          emit: clumped_SNPs
+    tuple val(condition), path ("*GWAS_QC_nodups.tsv.gz"),                 emit: GWAS_QC_noClump
+    tuple val(condition), path ("*GWAS_QC_nodups_clump.clumped"),          emit: clumped_SNPs
     // path("*.log")
     
 
