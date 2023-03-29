@@ -8,11 +8,12 @@ process PLINK_MERGE {
     input:
     tuple val(meta), val(bedfiles)
     each path (PLINKethinicityRelatedness)
+    each path (pheno)
     
 
     output:
     tuple val(meta), path ("*.bed"), path ("*.bim"), path ("*.fam"), path ("*.log") , emit: all_chromosomes_extracted
-    path "chr_file_list.txt", emit: chrfilelist
+    // path "chr_file_list.txt", emit: chrfilelist
 
 
 
@@ -34,11 +35,12 @@ process PLINK_MERGE {
     plink --bfile \$first_chr \\
         --merge-list chr_file_list.txt \\
         --make-bed \\
-        --remove $PLINKethinicityRelatedness \\
+        --remove ${PLINKethinicityRelatedness} \\
+        --pheno ${pheno} \\
         --maf 0.01 --mac 100 --geno 0.1 --hwe 1e-15 \\
         --threads $task.cpus \\
         --memory $mem_mb \\
-        --out ${meta}_mergedfile
+        --out ${meta}_ALLCHR
 
     
     """

@@ -29,9 +29,13 @@ SNP_frq = data.table::fread(args[13])
 annotated_ORs_outfilename = paste0(condition, "_", PLINK_ORs_recessive, "_", Sys.Date(), "_annotated_ORs.csv")
 dir.create(file.path(".", "figs"))
 ORfigure = paste0("figs/PLINK_ORs_", condition, "_", PLINK_ORs_recessive, "_", Sys.Date(),"_UKBB.png")
+EPWAS_SNPs_filename = paste0(condition, "_", Sys.Date(), "_EPWAS_SNPs.bed")
 
-## Annotate with  INFO scores, MAF
 
+
+
+
+## Annotate with  MAF
 
 (results_per_snp2 <- results_per_snp %>% dplyr::select(-ALT,-FIRTH,-Z_STAT,-OBS_CT) %>% 
     left_join(SNP_frq) %>% group_by(SNP, TEST) %>% slice_head(n=1) %>% ungroup())
@@ -192,11 +196,12 @@ ggsave(
 
 
 #produce bed file for pipeline
-#make bed
+#make bed of unique coordinates
 results_per_snp3 %>% select(seqnames,  start,end, SNP) %>%
   mutate(score=".", strand=".") %>%
-  relocate(seqnames, start, end, SNP, score, strand) %>%
-  data.table::fwrite(file="EP_WAS.bed", sep="\t", col.names=F)
+  dplyr::select(seqnames, start, end, SNP, score, strand) %>%
+  distinct(.keep_all = TRUE) %>% 
+  fwrite(file=EPWAS_SNPs_filename, sep="\t", col.names=F)
 
 # produce file in HCM GWAS format
 #SNP     A1      A2      Z       N       FRQ     P       POS     CHR     BETA    SE

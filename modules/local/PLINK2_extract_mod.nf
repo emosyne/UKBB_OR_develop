@@ -8,11 +8,12 @@ process PLINK2_EXTRACT {
     cache 'lenient'
 
     input: 
-    tuple val(meta), path(GWAS_ENH_MERGE_BED_hg19), path(ENH_bed), path(pheno), path(ENH_csv), path(chr_bgenfile), path(chr_samplefile)
+    // [SCZ_clumped_GWAS_SNPs_plus_those_in_bed_files.bed, ukb22828_c13_b0_v3.bgen, ukb22828_c13_b0_v3.sample]
+    tuple path(extracted_GWAS_SNPs_bed), path(chr_bgenfile), path(chr_samplefile)
     
 
     output:
-    tuple val(meta), path("*.bim"), path("*.bed"), path ("*.fam"), path("*.log"), emit: SNPextracted_by_chromosome
+    tuple val("SCZ"), path("*.bim"), path("*.bed"), path ("*.fam"), path("*.log"), emit: SNPextracted_by_chromosome
     
 
 
@@ -24,10 +25,9 @@ process PLINK2_EXTRACT {
         --memory $mem_mb \\
         --bgen ${chr_bgenfile} ref-first \\
         --sample ${chr_samplefile} \\
-        --pheno $pheno \\
         --rm-dup force-first --make-bed \\
-        --extract bed1 ${GWAS_ENH_MERGE_BED_hg19} \\
-        --out ${GWAS_ENH_MERGE_BED_hg19.simpleName}_${chr_bgenfile.simpleName}
+        --extract bed1 ${extracted_GWAS_SNPs_bed} \\
+        --out extracted_GWAS_SNPs_${chr_bgenfile.simpleName}
 
 
     """

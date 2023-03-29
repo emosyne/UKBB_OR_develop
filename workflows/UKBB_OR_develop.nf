@@ -19,29 +19,29 @@ include { R_extract_GWAS_SNPs_into_bed }    from '../modules/local/R_extract_GWA
 
 
 
-enhancer_plus_GWAS_coords = Channel.from("SCZ") 
-    .map { condition -> ["${condition}", 
-           file("./input/textfiles/ENH_${condition}_hg38.csv.gz", checkIfExists: true), 
-           file("$GWAS_dir/PGC3_SCZ_wave3.european.autosome.public.v3_overInfo.8_OR.tsv.gz", checkIfExists: true), 
-           file("./input/biobank/${condition}.pheno", checkIfExists: true)] } 
-        //    .view()
+// enhancer_plus_GWAS_coords = Channel.from("SCZ") 
+//     .map { condition -> ["${condition}", 
+//            file("./input/textfiles/ENH_${condition}_hg38.csv.gz", checkIfExists: true), 
+//            file("$GWAS_dir/PGC3_SCZ_wave3.european.autosome.public.v3_overInfo.8_OR.tsv.gz", checkIfExists: true), 
+//            file("./input/biobank/${condition}.pheno", checkIfExists: true)] } 
+//         //    .view()
 
 
 
 full_GWAS_hg19 = Channel
     .fromPath("$GWAS_dir/PGC3_SCZ_wave3.european.autosome.public.v3_overInfo.8_OR.tsv.gz", checkIfExists: true) 
     .map{it-> ["SCZ", it]}
-full_GWAS_HCMformat = Channel
-    .fromPath("$GWAS_dir/PGC3_SCZ_wave3.european.autosome.public.v3_HCM_format.tsv.gz", checkIfExists: true) 
-    .map{it-> ["SCZ", it]}
+
+dx_UKBB_pheno =    Channel.fromPath("./input/biobank/SCZ.pheno", checkIfExists: true).map{it-> ["SCZ", it]}
 
 
-// chain file
-hg38ToHg19_chain = Channel
-    .fromPath( "./input/chainfiles/hg38ToHg19.over.chain", checkIfExists: true)
-//LD blocks 1000 genomes
-GW_LD_blocks = Channel
-    .fromPath( "./input/LD/EUR_phase3_autosomes_hg19.blocks.det.gz", checkIfExists: true)
+
+// // chain file
+// hg38ToHg19_chain = Channel
+//     .fromPath( "./input/chainfiles/hg38ToHg19.over.chain", checkIfExists: true)
+// //LD blocks 1000 genomes
+// GW_LD_blocks = Channel
+//     .fromPath( "./input/LD/EUR_phase3_autosomes_hg19.blocks.det.gz", checkIfExists: true)
 
 // #### UKBB PLINK input files ####
 genotype_chr_files = Channel
@@ -60,24 +60,34 @@ LD_reference = Channel.from("bed","bim","fam")
     .map { ext -> [file("$ld_ref_dir/EUR_phase3_autosomes_hg19.${ext}")] }
             .collect().map{it-> ["SCZ", it]}
 
+// ################################ INTERNAL VALIDATION INPUTS ################################
 
+full_GWAS_HCMformat = Channel
+    .fromPath("$GWAS_dir/PGC3_SCZ_wave3.european.autosome.public.v3_HCM_format.tsv.gz", checkIfExists: true) 
+    .map{it-> ["SCZ", it]}
+enhancer_lists_bed_files = 
+    Channel.from("Neural_significant_enh")
+            .map { ENH_list -> ["${ENH_list}", 
+                file("./input/validation/enhancer_files/${ENH_list}.bed", checkIfExists: true)]
+            } 
 
 workflow UKBB_OR_develop {
     // ################################ EPWAS development ################################
-    GENERATESNPLISTS( 
-        // THIS MODULE IMPORTS E-PS LIST (hg38) AND GWAS results (hg19), converts them to hg 19 and merges them
-        // outputting bed files
-        enhancer_plus_GWAS_coords, 
-        hg38ToHg19_chain
+    // GENERATESNPLISTS( 
+    //     // THIS MODULE IMPORTS E-PS LIST (hg38) AND GWAS results (hg19), converts them to hg 19 and merges them
+    //     // outputting bed files
+    //     enhancer_plus_GWAS_coords, 
+    //     R_extract_GWAS_SNPs_into_bed.out.clumped_GWAS_SNPs_plus_those_in_bed_files,
+    //     hg38ToHg19_chain
 
-        //out tuple val(meta), path("GWAS_*_hg19.bed"), path("ENH_*_hg19.bed"), path(pheno), path("ENH_*_hg19.csv"), emit: processed_ENH_SNP_lists_hg19
-        )
+    //     //out tuple val(meta), path("GWAS_*_hg19.bed"), path("ENH_*_hg19.bed"), path(pheno), path("ENH_*_hg19.csv"), emit: processed_ENH_SNP_lists_hg19
+    //     )
     // GENERATESNPLISTS.out.processed_ENH_SNP_lists_hg19.view()
     
-    chromosomes_by_condition_plus_SNPs = 
-        GENERATESNPLISTS.out.processed_ENH_SNP_lists_hg19
-            .combine(genotype_chr_files) //The combine operator combines (cartesian product) the items emitted by two channels
-            // .view()
+    // chromosomes_by_condition_plus_SNPs = 
+    //     GENERATESNPLISTS.out.processed_ENH_SNP_lists_hg19
+    //         .combine(genotype_chr_files) //The combine operator combines (cartesian product) the items emitted by two channels
+    //         // .view()
         
 
 
@@ -123,7 +133,8 @@ workflow UKBB_OR_develop {
     PLINK_MERGE(
         // merge all bed files into one:
         bedfiles, 
-        UKBBethinicityRelatedness
+        UKBBethinicityRelatedness,
+        dx_UKBB_pheno.map{it-> [it[1]]}
 
         //out tuple val(meta), path ("*.bed"), path ("*.bim"), path ("*.fam"), path ("*.log") , emit: all_chromosomes_extracted
         )
@@ -136,10 +147,9 @@ workflow UKBB_OR_develop {
 
         PLINK_MERGE.out.all_chromosomes_extracted
             //join will join all_chromosomes_extracted with the SNP list output from step 1 by condition (meta)
-            .join(GENERATESNPLISTS.out.processed_ENH_SNP_lists_hg19.map{it->[it[0],it[2]]}, by: [0])//join ENH hg19 bed file
-            .join(enhancer_plus_GWAS_coords.map{it->[it[0],it[3]]}, by: [0]), // also join pheno file
-        UKBB_covariates,
-        Channel.fromPath("./input/textfiles/Neural_significant_enh.bed", checkIfExists: true) 
+            .join(enhancer_lists_bed_files, by: [0])//join ENH hg19 bed file
+            .join(dx_UKBB_pheno, by: [0]), // also join pheno file
+        UKBB_covariates
 
         //out tuple val(meta), path ("*_ORs_PLINK2_logistic_firth_fallback_covar_recessive.PHENO1.glm.logistic.hybrid"), path ("*_ORs_PLINK2_logistic_firth_fallback_covar_standard.PHENO1.glm.logistic.hybrid"), emit: associations
         )
@@ -165,27 +175,24 @@ workflow UKBB_OR_develop {
             .map { it.flatten() }
     )
     
-    
 
-    // R_extract_GWAS_SNPs_into_bed ( 
-    //     // THIS MODULE IMPORTS 
-    //     // GWAS (hg19), and selects all SNPs in input bed files and all GWAS clumped SNPs and outputs a bed file
-    //     enhancer_lists_bed_files.map{it -> it[1]}.mix(Channel.fromPath("./input/EPWAS/EP_WAS.bed")).collect(),
-    //     PLINK_base_GWAS_QC_and_clump.out.GWAS_QC_noClump
-    //         .combine(PLINK_base_GWAS_QC_and_clump.out.clumped_SNPs)
-    //         .map { [it, condition].flatten() }
-        
-    //     )
-//     // R_extract_GWAS_SNPs_into_bed.out.clumped_GWAS_SNPs_plus_those_in_bed_files
-//     //     .combine(R_extract_GWAS_SNPs_into_bed.out.clumped_GWAS)
-//     //     .view()
-//     chromosomes_by_condition_plus_SNPs = 
-//         // PGC_GWAS_plus_allEPlists_SNPs_hg19
-//         R_extract_GWAS_SNPs_into_bed.out.clumped_GWAS_SNPs_plus_those_in_bed_files
-//             .combine(genotype_chr_files) //The combine operator combines (cartesian product) the items emitted by two channels
+    R_extract_GWAS_SNPs_into_bed ( 
+        // THIS MODULE IMPORTS 
+        // GWAS (hg19), and selects all SNPs in input bed files and all GWAS clumped SNPs and outputs a bed file
+        enhancer_lists_bed_files.map{it -> it[1]}.mix(R_ANNOTATE_ORs.out.EPWAS_SNPs).collect(),
+        PLINK_base_GWAS_QC_and_clump.out.GWAS_QC_noClump
+            .combine(PLINK_base_GWAS_QC_and_clump.out.clumped_SNPs)
+            .map { [it, condition].flatten() }
+        )
+    // // R_extract_GWAS_SNPs_into_bed.out.clumped_GWAS_SNPs_plus_those_in_bed_files
+    // //     .combine(R_extract_GWAS_SNPs_into_bed.out.clumped_GWAS)
+    // //     .view()
+    chromosomes_by_condition_plus_SNPs = 
+        R_extract_GWAS_SNPs_into_bed.out.clumped_GWAS_SNPs_plus_those_in_bed_files
+            .combine(genotype_chr_files) //The combine operator combines (cartesian product) the items emitted by two channels
             
         
-//     // chromosomes_by_condition_plus_SNPs.view()
+    chromosomes_by_condition_plus_SNPs.view()
 
 //     // GENERATE UKBB UNIQUE FILE
 //     PLINK2_EXTRACT ( 
@@ -201,7 +208,7 @@ workflow UKBB_OR_develop {
 //         // merge all bed files into one:
 //         PLINK2_EXTRACT.out.SNPextracted_by_chromosome.collect(),
 //         UKBBethinicityRelatedness,
-//         dx_UKBB_pheno
+//         
 //         //out tuplepath ("*.bed"), path ("*.bim"), path ("*.fam"),  emit: all_chromosomes_extracted
 //         )
 //     // PLINK_MERGE.out.all_chromosomes_extracted.view()

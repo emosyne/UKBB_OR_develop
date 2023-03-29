@@ -7,9 +7,8 @@ process PLINK2_ASSOC_GLM {
     // errorStrategy 'ignore'
 
     input: 
-    tuple val(meta), path (bedfilepath), path (bim), path (fam), path (log), path(SNVs_hg19), path(pheno)
+    tuple val(meta), path (bedfilepath), path (bim), path (fam), path (log), path(enhancers_bed), path(pheno)
     each path(UKBB_covariates)
-    each path(Neural_significant_enh)
     
 
     output:
@@ -26,7 +25,7 @@ process PLINK2_ASSOC_GLM {
         --threads $task.cpus \\
         --memory $mem_mb \\
         --bfile ${bedfilepath.baseName} \\
-        --extract bed1 ${Neural_significant_enh} \\
+        --extract bed1 ${enhancers_bed} \\
         --chr 1-22 \\
         --write-snplist \\
         --glm recessive firth-fallback omit-ref hide-covar \\
@@ -43,7 +42,7 @@ process PLINK2_ASSOC_GLM {
         --threads $task.cpus \\
         --memory $mem_mb \\
         --bfile ${bedfilepath.baseName} \\
-        --extract bed1 ${Neural_significant_enh} \\
+        --extract bed1 ${enhancers_bed} \\
         --chr 1-22 \\
         --write-snplist \\
         --glm firth-fallback omit-ref hide-covar \\
@@ -60,7 +59,7 @@ process PLINK2_ASSOC_GLM {
         --threads $task.cpus \\
         --memory $mem_mb \\
         --bfile ${bedfilepath.baseName} \\
-        --extract bed1 ${Neural_significant_enh} \\
+        --extract bed1 ${enhancers_bed} \\
         --chr 1-22 \\
         --write-snplist \\
         --glm dominant firth-fallback omit-ref hide-covar \\

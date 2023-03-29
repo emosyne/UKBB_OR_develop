@@ -15,8 +15,9 @@ process R_ANNOTATE_ORs {
 
 
     output:
-    tuple val(condition), path("*.tsv.gz"),       emit: annotated_ORs
-    path "figs/*_UKBB.pdf"                      ,       emit: ORfigure
+    path("*_EPWAS_SNPs.bed"),                   emit: EPWAS_SNPs
+    tuple path("*.tsv.gz"),                     emit: EPWAS_files_HCM_format
+    path "figs/*_UKBB.pdf"
     
 
     script:
