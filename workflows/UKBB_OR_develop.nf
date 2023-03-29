@@ -143,7 +143,7 @@ workflow UKBB_OR_develop {
     PLINK2_ASSOC_GLM(
         PLINK_MERGE.out.all_chromosomes_extracted
             //join will join all_chromosomes_extracted with the SNP list output from step 1 by condition (meta)
-            .join(enhancer_lists_bed_files, by: [0])//join ENH hg19 bed file
+            .join(enhancer_lists_bed_files, by: [0]),//join ENH hg19 bed file
         UKBB_covariates
         //out tuple val(meta), path ("*_ORs_PLINK2_logistic_firth_fallback_covar_recessive.PHENO1.glm.logistic.hybrid"), path ("*_ORs_PLINK2_logistic_firth_fallback_covar_standard.PHENO1.glm.logistic.hybrid"), emit: associations
         )
