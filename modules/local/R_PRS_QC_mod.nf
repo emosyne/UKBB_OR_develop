@@ -8,8 +8,8 @@ process R_PRS_QC {
 
 
     input: 
-    // [SCZ, SCZ_ALLCHR.prune.in, SCZ_ALLCHR.het, SCZ_GWAS_QC_nodups.tsv.gz]
-    tuple val(condition), path (prune), path (het), path (bedfilepath), path (bim), path (fam), path (log), path(GWAS)
+    //    val(condition), path (bedfilepath), path (bim), path (fam), path ("*.prune.in"), path ("*.het"),  emit: pruned_variants_het
+    tuple val(condition), path (bedfilepath), path (bim), path (fam), path (prune), path (het), path(GWAS)
     
     
 
