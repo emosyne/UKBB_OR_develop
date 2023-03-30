@@ -1,17 +1,18 @@
 process PLINK2_QC_PRUNE_HET {
-    tag "$meta"
+    tag "$condition"
     // debug true
     label 'process_high_memory'
     container 'emosyne/plink2:1.23'
     cache 'lenient'
 
     input: 
-    tuple val(meta), path (bedfilepath), path (bim), path (fam), path (log)
+    tuple val(condition), path (bedfilepath), path (bim), path (fam), path (log)
     
     
 
     output:
-    tuple val(meta), path ("*.prune.in"), path ("*.het"), emit: pruned_variants_het
+    
+    tuple val(condition), path (bedfilepath), path (bim), path (fam), path ("*.prune.in"), path ("*.het"),  path ("*.prune.in"), path ("*.het"), emit: pruned_variants_het
     // path("*.log")
     
 
