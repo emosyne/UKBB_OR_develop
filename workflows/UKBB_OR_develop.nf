@@ -8,10 +8,10 @@ include { PLINK_PRODUCE_QC_DATASET }        from '../modules/local/PLINK_PRODUCE
 include { PLINK_clump }                     from '../modules/local/PLINK_clump_mod.nf'
 include { PLINK_base_GWAS_QC_and_clump }    from '../modules/local/PLINK_base_GWAS_QC_and_clump.nf'
 include { R_extract_GWAS_SNPs_into_bed }    from '../modules/local/R_extract_GWAS_SNPs_into_bed.nf'
-// include {  }     from '../modules/local/'
-// include {  }     from '../modules/local/'
-// include {  }     from '../modules/local/'
-// include {  }     from '../modules/local/'
+include { R_prepare_lists_for_clump }       from '../modules/local/R_prepare_lists_for_clump.nf'
+include { R_split_lists }                   from '../modules/local/R_split_lists.nf'
+include { PRSice_calculate_PRS_split_partitions }   from '../modules/local/PRSice_calculate_PRS_split_partitions.nf'
+include { R_final_plot }                    from '../modules/local/R_final_plot.nf'
 // include {  }     from '../modules/local/'
 
 
