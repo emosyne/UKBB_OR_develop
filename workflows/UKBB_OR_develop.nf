@@ -148,7 +148,6 @@ workflow UKBB_OR_develop {
     // PLINK2_QC_PRUNE_HET.out.pruned_variants_het
     //         .join(PLINK_base_GWAS_QC_and_clump.out.GWAS_QC_noClump)
     //         .view()
-    // 
 
     // TARGET QC 2:  remove heterogeneity outliers, produced A1 alleles, and mismatching SNPs list to be removed
     // produce QC_het_a1_mismatch, 
