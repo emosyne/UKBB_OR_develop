@@ -166,14 +166,14 @@ workflow UKBB_OR_develop {
         R_PRS_QC.out.QC_het_a1_mismatch
     )
 
-    // PLINK_PRODUCE_QC_DATASET.out.target_QC.view()
+    PLINK_PRODUCE_QC_DATASET.out.target_QC
+            .combine(enhancer_lists_bed_files.map{it -> it[1]})
     // [SCZ, SCZ_ALLCHR_SCZ_QC.bed, SCZ_ALLCHR_SCZ_QC.bim, SCZ_ALLCHR_SCZ_QC.fam, SCZ_GWAS_QC_nodups.tsv.gz]
 
 
 
     PLINK2_ASSOC_GLM(
         PLINK_PRODUCE_QC_DATASET.out.target_QC
-            //join will join all_chromosomes_extracted with the SNP list output from step 1 by condition (meta)
             .combine(enhancer_lists_bed_files.map{it -> it[1]}),// ENH hg19 bed file
         UKBB_covariates
         )
