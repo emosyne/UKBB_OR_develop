@@ -11,10 +11,7 @@ include { R_extract_GWAS_SNPs_into_bed }    from '../modules/local/R_extract_GWA
 include { R_prepare_lists_for_clump }       from '../modules/local/R_prepare_lists_for_clump.nf'
 include { R_split_lists }                   from '../modules/local/R_split_lists.nf'
 include { PRSice_calculate_PRS_split_partitions }   from '../modules/local/PRSice_calculate_PRS_split_partitions.nf'
-include { R_final_plot }                    from '../modules/local/R_final_plot.nf'
-// include {  }     from '../modules/local/'
-
-
+include { R_final_plot }                    from '../modules/local/R_final_plot_mod.nf'
 
 
 
