@@ -7,11 +7,11 @@ process PLINK_PRODUCE_QC_DATASET {
 
 
     input:
-    tuple val(condition), path(bed), path(bim), path(fam), path(HCM_GWAS_QC), path (het_valid), path(a1_bim), path(mismatch)
+    tuple val(condition), path(bed), path(bim), path(fam), path(GWAS_QC), path (het_valid), path(a1_bim), path(mismatch)
     
 
     output:
-    tuple val(condition), path ("*_QC.bed"), path ("*_QC.bim"), path ("*_QC.fam"), path(HCM_GWAS_QC),            emit: target_QC
+    tuple val(condition), path ("*_QC.bed"), path ("*_QC.bim"), path ("*_QC.fam"), path(GWAS_QC),            emit: target_QC
     path ("*.log")
 
 
