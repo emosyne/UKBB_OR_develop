@@ -1,4 +1,3 @@
-include { GENERATESNPLISTS }                from '../modules/local/R_GENERATESNPLISTS_mod.nf'
 include { PLINK2_EXTRACT }                  from '../modules/local/PLINK2_extract_mod.nf'
 include { PLINK_MERGE }                     from '../modules/local/plink_mergechromfiles_mod.nf'
 include { PLINK2_ASSOC_GLM }                from '../modules/local/PLINK2_ASSOC_GLM_mod.nf'
