@@ -60,6 +60,8 @@ enhancer_lists_bed_files =
             .map { ENH_list -> ["${ENH_list}", 
                 file("./input/validation/enhancer_files/${ENH_list}.bed", checkIfExists: true)]
             } 
+annotations = Channel.fromPath( "./input/ES_multipliers/2023-01-18_2023-02-17_NEURAL_ENH_EXP_significant_plus_100_noOverlap_HCMformat.csv.gz", checkIfExists: true)
+
 
 workflow UKBB_OR_develop {
     
@@ -229,36 +231,33 @@ workflow UKBB_OR_develop {
             .map{it.flatten()}
     )
     PLINK_clump.out.clumped_SNPs_and_noclump_lists.view()
-    // [/rds/general/ephemeral/user/eosimo/ephemeral/HCM_cardiac_enhs/work/82/3cd69072a998abd4ba99f1bae51356/GWAS_ENH_SNPs_hg19_ALLCHR_SCZ_QC.bed, /rds/general/ephemeral/user/eosimo/ephemeral/HCM_cardiac_enhs/work/82/3cd69072a998abd4ba99f1bae51356/GWAS_ENH_SNPs_hg19_ALLCHR_SCZ_QC.bim, /rds/general/ephemeral/user/eosimo/ephemeral/HCM_cardiac_enhs/work/82/3cd69072a998abd4ba99f1bae51356/GWAS_ENH_SNPs_hg19_ALLCHR_SCZ_QC.fam, Neural_significant_enh, /rds/general/ephemeral/user/eosimo/ephemeral/HCM_cardiac_enhs/work/82/3cd69072a998abd4ba99f1bae51356/SCZ_REC_Neural_significant_enh_noclump_EPWAS.tsv.gz, /rds/general/ephemeral/user/eosimo/ephemeral/HCM_cardiac_enhs/work/82/3cd69072a998abd4ba99f1bae51356/SCZ_REC_Neural_significant_enh_noclump_residual_GWAS_compartment.tsv.gz, /rds/general/ephemeral/user/eosimo/ephemeral/HCM_cardiac_enhs/work/82/3cd69072a998abd4ba99f1bae51356/SCZ_Neural_significant_enh_clumped_SNPs.clumped, SCZ, REC]
     
 
-//     R_split_lists (
-//         // first annotate SNPs with ES of relevant E-P - for ENH SNP list
-//         // ##################################################### GENERATE MODIFIED ORS MULT BY ES OR EXP       ###########################################################
-//         // ##################################################### CAN MULTIPLY P BY VALUE TO RESTORE ENH SNPS P ###########################################################
-//         // output separate lists to calculate split PRSs and also merged one
-//         PLINK_clump.out.clumped_SNPs_and_noclump_lists,//.map { [it, "1"].flatten() }, //######################## multiplier can be set here ########################
-//         annotations
-//     )
+    R_split_lists (
+        // first annotate SNPs with ES of relevant E-P - for ENH SNP list
+        // ##################################################### GENERATE MODIFIED ORS MULT BY ES OR EXP       ###########################################################
+        // ##################################################### CAN MULTIPLY P BY VALUE TO RESTORE ENH SNPS P ###########################################################
+        // output separate lists to calculate split PRSs and also merged one
+        PLINK_clump.out.clumped_SNPs_and_noclump_lists,//.map { [it, "1"].flatten() }, //######################## multiplier can be set here ########################
+        annotations
+    )
 
     
-//     R_split_lists.out.partitioned 
-//         .combine(R_extract_GWAS_SNPs_into_bed.out.clumped_GWAS)
-//         .combine(UKBB_covariates)
-//         .combine(LD_reference)
-//         .map { [it, "0.5"].flatten() }         // ######################## SET CT THRESHOLD FOR PRSICE ##################
-//         .set{combined_splitlists_bedfile_QCeddata_LDdata_05}
-//     R_split_lists.out.partitioned 
-//         .combine(R_extract_GWAS_SNPs_into_bed.out.clumped_GWAS)
-//         .combine(UKBB_covariates)
-//         .combine(LD_reference)
-//         .map { [it, "0.05"].flatten() }         // ######################## SET CT THRESHOLD FOR PRSICE ##################
-//         .set{combined_splitlists_bedfile_QCeddata_LDdata_005}
+    R_split_lists.out.partitioned 
+        .combine(R_extract_GWAS_SNPs_into_bed.out.clumped_GWAS)
+        .combine(UKBB_covariates)
+        .combine(LD_reference)
+        .map { [it, "0.5"].flatten() }         // ######################## SET CT THRESHOLD FOR PRSICE ##################
+        .set{combined_splitlists_bedfile_QCeddata_LDdata_05}
+    R_split_lists.out.partitioned 
+        .combine(R_extract_GWAS_SNPs_into_bed.out.clumped_GWAS)
+        .combine(UKBB_covariates)
+        .combine(LD_reference)
+        .map { [it, "0.05"].flatten() }         // ######################## SET CT THRESHOLD FOR PRSICE ##################
+        .set{combined_splitlists_bedfile_QCeddata_LDdata_005}
     
-//     combined_splitlists_bedfile_QCeddata_LDdata = combined_splitlists_bedfile_QCeddata_LDdata_05.mix(combined_splitlists_bedfile_QCeddata_LDdata_005)
-//     // combined_splitlists_bedfile_QCeddata_LDdata.view()
-//     // [GWAS_ENH_SNPs_hg19_ALLCHR_SCZ_QC.bed, GWAS_ENH_SNPs_hg19_ALLCHR_SCZ_QC.bim, GWAS_ENH_SNPs_hg19_ALLCHR_SCZ_QC.fam, Neural_significant_enh, Neural_significant_enh_REC_SCZ_X_1_clumped_EPWAS.tsv.gz, Neural_significant_enh_REC_SCZ_clumped_residual_GWAS_compartment.tsv.gz, 1, SCZ, REC, /rds/general/ephemeral/user/eosimo/ephemeral/HCM_cardiac_enhs/work/b0/fcec9ad982f3a82c3b2bef76691d0a/SCZ_clumped_GWAS_QC_nodups.tsv.gz, /rds/general/ephemeral/user/eosimo/ephemeral/HCM_cardiac_enhs/input/biobank/non_missing_10PCs_Jun22.covariate.gz, /rds/general/user/eosimo/home/lenhard_prs/LD_ref/EUR_phase3_autosomes_hg19.bed, /rds/general/user/eosimo/home/lenhard_prs/LD_ref/EUR_phase3_autosomes_hg19.bim, /rds/general/user/eosimo/home/lenhard_prs/LD_ref/EUR_phase3_autosomes_hg19.fam, 0.05]
-//     // [GWAS_ENH_SNPs_hg19_ALLCHR_SCZ_QC.bed, GWAS_ENH_SNPs_hg19_ALLCHR_SCZ_QC.bim, GWAS_ENH_SNPs_hg19_ALLCHR_SCZ_QC.fam, Neural_significant_enh, Neural_significant_enh_REC_SCZ_X_1_clumped_EPWAS.tsv.gz, Neural_significant_enh_REC_SCZ_clumped_residual_GWAS_compartment.tsv.gz, 1, SCZ, REC, /rds/general/ephemeral/user/eosimo/ephemeral/HCM_cardiac_enhs/work/b0/fcec9ad982f3a82c3b2bef76691d0a/SCZ_clumped_GWAS_QC_nodups.tsv.gz, /rds/general/ephemeral/user/eosimo/ephemeral/HCM_cardiac_enhs/input/biobank/non_missing_10PCs_Jun22.covariate.gz, /rds/general/user/eosimo/home/lenhard_prs/LD_ref/EUR_phase3_autosomes_hg19.bed, /rds/general/user/eosimo/home/lenhard_prs/LD_ref/EUR_phase3_autosomes_hg19.bim, /rds/general/user/eosimo/home/lenhard_prs/LD_ref/EUR_phase3_autosomes_hg19.fam, 0.5]
+    combined_splitlists_bedfile_QCeddata_LDdata = combined_splitlists_bedfile_QCeddata_LDdata_05.mix(combined_splitlists_bedfile_QCeddata_LDdata_005)
+    combined_splitlists_bedfile_QCeddata_LDdata.view()
 
     
 //     PRSice_calculate_PRS_split_partitions(
