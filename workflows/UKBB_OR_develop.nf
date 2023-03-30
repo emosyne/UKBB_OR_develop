@@ -217,7 +217,7 @@ workflow UKBB_OR_develop {
     )
     
     // R_prepare_lists_for_clump.out.lists_before_clump
-    //     .join(LD_reference, by: [0])
+    //     .combine(LD_reference, by: [0])
     //     .map{it.flatten()}
     //     .view()
     // [SCZ, /rds/general/ephemeral/user/eosimo/ephemeral/UKBB_OR_develop/work/da/0411b350336a0cc11bd6e843d4d59e/SCZ_ALLCHR_SCZ_QC.bed, /rds/general/ephemeral/user/eosimo/ephemeral/UKBB_OR_develop/work/da/0411b350336a0cc11bd6e843d4d59e/SCZ_ALLCHR_SCZ_QC.bim, /rds/general/ephemeral/user/eosimo/ephemeral/UKBB_OR_develop/work/da/0411b350336a0cc11bd6e843d4d59e/SCZ_ALLCHR_SCZ_QC.fam, Neural_significant_enh, /rds/general/ephemeral/user/eosimo/ephemeral/UKBB_OR_develop/work/da/0411b350336a0cc11bd6e843d4d59e/SCZ_ADD_Neural_significant_enh_noclump_EPWAS.tsv.gz, /rds/general/ephemeral/user/eosimo/ephemeral/UKBB_OR_develop/work/da/0411b350336a0cc11bd6e843d4d59e/SCZ_ADD_Neural_significant_enh_noclump_residual_GWAS_compartment.tsv.gz, ADD, /rds/general/user/eosimo/home/lenhard_prs/LD_ref/EUR_phase3_autosomes_hg19.bed, /rds/general/user/eosimo/home/lenhard_prs/LD_ref/EUR_phase3_autosomes_hg19.bim, /rds/general/user/eosimo/home/lenhard_prs/LD_ref/EUR_phase3_autosomes_hg19.fam]
@@ -225,7 +225,7 @@ workflow UKBB_OR_develop {
     PLINK_clump (
         //CLUMPING of enhancer-based SNP compartments together 
         R_prepare_lists_for_clump.out.lists_before_clump
-            .join(LD_reference, by: [0])
+            .combine(LD_reference, by: [0])
             .map{it.flatten()}
     )
     PLINK_clump.out.clumped_SNPs_and_noclump_lists.view()
