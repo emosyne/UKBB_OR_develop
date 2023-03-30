@@ -201,7 +201,7 @@ results_per_snp3 %>% select(seqnames,  start,end, SNP) %>%
   mutate(score=".", strand=".") %>%
   dplyr::select(seqnames, start, end, SNP, score, strand) %>%
   distinct(.keep_all = TRUE) %>% 
-  fwrite(file=EPWAS_SNPs_filename, sep="\t", col.names=F)
+  data.table::fwrite(file=EPWAS_SNPs_filename, sep="\t", col.names=F)
 
 # produce file in HCM GWAS format
 #SNP     A1      A2      Z       N       FRQ     P       POS     CHR     BETA    SE
