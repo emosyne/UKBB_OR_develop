@@ -15,8 +15,10 @@ process R_ANNOTATE_ORs {
 
 
     output:
-    path("*_EPWAS_SNPs.bed"),                   emit: EPWAS_SNPs
-    tuple path("*.tsv.gz"),                     emit: EPWAS_files_HCM_format
+    path("*_EPWAS_SNPs.bed"),                                                       emit: EPWAS_SNPs
+    tuple val("REC"), path("UKBB_ENH_associations_REC.tsv.gz"),                     emit: EPWAS_HCM_format_REC
+    tuple val("ADD"), path("UKBB_ENH_associations_ADD.tsv.gz"),                     emit: EPWAS_HCM_format_ADD
+    tuple val("DOM"), path("UKBB_ENH_associations_DOM.tsv.gz"),                     emit: EPWAS_HCM_format_DOM
     path "figs/*_UKBB.pdf"
     
 

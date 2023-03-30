@@ -7,7 +7,7 @@ process PLINK2_ASSOC_GLM {
     // errorStrategy 'ignore'
 
     input: 
-    // [SCZ, SCZ_ALLCHR_SCZ_QC.bed, SCZ_ALLCHR_SCZ_QC.bim, SCZ_ALLCHR_SCZ_QC.fam, SCZ_GWAS_QC_nodups.tsv.gz]
+    // [SCZ, SCZ_ALLCHR_SCZ_QC.bed, SCZ_ALLCHR_SCZ_QC.bim, SCZ_ALLCHR_SCZ_QC.fam, SCZ_GWAS_QC_nodups.tsv.gz, Neural_significant_enh.bed]
     tuple val(condition), path (bed_QC), path (bim_QC), path (fam_QC), path(GWAS_QC), path(enhancers_bed)
     each path(UKBB_covariates)
     

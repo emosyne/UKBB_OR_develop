@@ -166,12 +166,10 @@ workflow UKBB_OR_develop {
         R_PRS_QC.out.QC_het_a1_mismatch
     )
 
-    PLINK_PRODUCE_QC_DATASET.out.target_QC
-            .combine(enhancer_lists_bed_files.map{it -> it[1]})
-            .view()
-    // [SCZ, SCZ_ALLCHR_SCZ_QC.bed, SCZ_ALLCHR_SCZ_QC.bim, SCZ_ALLCHR_SCZ_QC.fam, SCZ_GWAS_QC_nodups.tsv.gz]
-
-
+    // PLINK_PRODUCE_QC_DATASET.out.target_QC
+    //         .combine(enhancer_lists_bed_files.map{it -> it[1]})
+    //         .view()
+    // [SCZ, /rds/general/ephemeral/user/eosimo/ephemeral/UKBB_OR_develop/work/d7/d302e50863cd085dbe4f45b217ae25/SCZ_ALLCHR_SCZ_QC.bed, /rds/general/ephemeral/user/eosimo/ephemeral/UKBB_OR_develop/work/d7/d302e50863cd085dbe4f45b217ae25/SCZ_ALLCHR_SCZ_QC.bim, /rds/general/ephemeral/user/eosimo/ephemeral/UKBB_OR_develop/work/d7/d302e50863cd085dbe4f45b217ae25/SCZ_ALLCHR_SCZ_QC.fam, /rds/general/ephemeral/user/eosimo/ephemeral/UKBB_OR_develop/work/d7/d302e50863cd085dbe4f45b217ae25/SCZ_GWAS_QC_nodups.tsv.gz, /rds/general/ephemeral/user/eosimo/ephemeral/UKBB_OR_develop/input/validation/enhancer_files/Neural_significant_enh.bed]
 
     PLINK2_ASSOC_GLM(
         PLINK_PRODUCE_QC_DATASET.out.target_QC
@@ -179,109 +177,111 @@ workflow UKBB_OR_develop {
         UKBB_covariates
         )
     
-    PLINK2_ASSOC_GLM.out.associations // ORs
-        .join(full_GWAS_hg19, by: [0]) //join full GWAS by condition
-        .view() 
+    // PLINK2_ASSOC_GLM.out.associations // ORs
+    //     .join(full_GWAS_hg19, by: [0]) //join full GWAS by condition
+    //     .view() 
+    // /[SCZ, /rds/general/ephemeral/user/eosimo/ephemeral/UKBB_OR_develop/work/0b/5bf167f5ec07a5519081d3a4d1847a/SCZ_ORs_PLINK2_logistic_firth_fallback_covar_recessive.PHENO1.glm.logistic.hybrid, /rds/general/ephemeral/user/eosimo/ephemeral/UKBB_OR_develop/work/0b/5bf167f5ec07a5519081d3a4d1847a/SCZ_ORs_PLINK2_logistic_firth_fallback_covar_standard.PHENO1.glm.logistic.hybrid, /rds/general/ephemeral/user/eosimo/ephemeral/UKBB_OR_develop/work/0b/5bf167f5ec07a5519081d3a4d1847a/SCZ_ORs_PLINK2_logistic_firth_fallback_covar_dominant.PHENO1.glm.logistic.hybrid, /rds/general/ephemeral/user/eosimo/ephemeral/UKBB_OR_develop/work/0b/5bf167f5ec07a5519081d3a4d1847a/SCZ_ORs_PLINK2_logistic_firth_fallback_covar_recessive.frq, /rds/general/user/eosimo/home/largedirs/scz_GWAS/PGC3_SCZ_wave3.european.autosome.public.v3_overInfo.8_OR.tsv.gz]
     
-    
-    // R_ANNOTATE_ORs(
-    //     // annotate ORs from previous step with GWAS results and other info,
-    //     //produce OR plots
-    //     PLINK2_ASSOC_GLM.out.associations // ORs
-    //         .join(full_GWAS_hg19, by: [0]) //join full GWAS by condition
+    R_ANNOTATE_ORs(
+        // annotate ORs from previous step with GWAS results and other info,
+        //produce OR plots
+        PLINK2_ASSOC_GLM.out.associations // ORs
+            .join(full_GWAS_hg19, by: [0]) //join full GWAS by condition
         
-    //     // out: tuple val(meta), path("*_annotated_ORs.csv"),       emit: annotated_ORs
-    // )
+        // out: tuple val(meta), path("*_annotated_ORs.csv"),       emit: annotated_ORs
+    )
     
-// // ################################ INTERNAL VALIDATION ################################
+// ################################ INTERNAL VALIDATION ################################
 
 
+    enhancer_EPWAS_files =
+        R_ANNOTATE_ORs.out.EPWAS_HCM_format_REC
+            .concat(R_ANNOTATE_ORs.out.EPWAS_HCM_format_ADD)
+            .concat(R_ANNOTATE_ORs.out.EPWAS_HCM_format_DOM)
+    
+    enhancer_EPWAS_files.view()
+    
+    
+    // PLINK_PRODUCE_QC_DATASET.out.target_QC
+    //     .combine(enhancer_lists_bed_files.map{it -> it[1]})
+    //     .combine()
+    //     .map { it.flatten() }
+    //     .set{cohort_GWAS_enh_list}
+    
+    // cohort_GWAS_enh_list.view()
 
 
+//     // BASE subsetting
+//     R_prepare_lists_for_clump (
+//         // SUBSETS GWAS SNPS INTO ENH COMPARTMENT AND RESIDUAL COMPARTMENT.
+//         // ########################### IN PREPARATION FOR CLUMPING, DIVIDE P VALUES FOR ENH SNPS BY X TO PRESERVE ENH SNPS ###########################
+//         cohort_GWAS_enh_list
+//     )
     
     
-// //     PLINK_PRODUCE_QC_DATASET.out.target_QC
-// //         .combine(enhancer_lists_bed_files)
-// //         .combine(enhancer_EPWAS_files)
-// //         .map { it.flatten() }
-// //         .set{cohort_GWAS_enh_list}
+//     //    R_prepare_lists_for_clump.out.lists_before_clump
+//     //         .combine(LD_reference)
+//     //         .view()
+//     // [/rds/general/ephemeral/user/eosimo/ephemeral/HCM_cardiac_enhs/work/8c/5832511f6ff56c817623ff8511e5a4/GWAS_ENH_SNPs_hg19_ALLCHR_SCZ_QC.bed, /rds/general/ephemeral/user/eosimo/ephemeral/HCM_cardiac_enhs/work/8c/5832511f6ff56c817623ff8511e5a4/GWAS_ENH_SNPs_hg19_ALLCHR_SCZ_QC.bim, /rds/general/ephemeral/user/eosimo/ephemeral/HCM_cardiac_enhs/work/8c/5832511f6ff56c817623ff8511e5a4/GWAS_ENH_SNPs_hg19_ALLCHR_SCZ_QC.fam, Neural_significant_enh, /rds/general/ephemeral/user/eosimo/ephemeral/HCM_cardiac_enhs/work/8c/5832511f6ff56c817623ff8511e5a4/SCZ_REC_Neural_significant_enh_noclump_EPWAS.tsv.gz, /rds/general/ephemeral/user/eosimo/ephemeral/HCM_cardiac_enhs/work/8c/5832511f6ff56c817623ff8511e5a4/SCZ_REC_Neural_significant_enh_noclump_residual_GWAS_compartment.tsv.gz, SCZ, REC, /rds/general/user/eosimo/home/lenhard_prs/LD_ref/EUR_phase3_autosomes_hg19.bed, /rds/general/user/eosimo/home/lenhard_prs/LD_ref/EUR_phase3_autosomes_hg19.bim, /rds/general/user/eosimo/home/lenhard_prs/LD_ref/EUR_phase3_autosomes_hg19.fam]
+//     // [/rds/general/ephemeral/user/eosimo/ephemeral/HCM_cardiac_enhs/work/ce/148eaf9bc44e293f60bb7e97ca30b7/GWAS_ENH_SNPs_hg19_ALLCHR_SCZ_QC.bed, /rds/general/ephemeral/user/eosimo/ephemeral/HCM_cardiac_enhs/work/ce/148eaf9bc44e293f60bb7e97ca30b7/GWAS_ENH_SNPs_hg19_ALLCHR_SCZ_QC.bim, /rds/general/ephemeral/user/eosimo/ephemeral/HCM_cardiac_enhs/work/ce/148eaf9bc44e293f60bb7e97ca30b7/GWAS_ENH_SNPs_hg19_ALLCHR_SCZ_QC.fam, Neural_significant_enh, /rds/general/ephemeral/user/eosimo/ephemeral/HCM_cardiac_enhs/work/ce/148eaf9bc44e293f60bb7e97ca30b7/SCZ_DOM_Neural_significant_enh_noclump_EPWAS.tsv.gz, /rds/general/ephemeral/user/eosimo/ephemeral/HCM_cardiac_enhs/work/ce/148eaf9bc44e293f60bb7e97ca30b7/SCZ_DOM_Neural_significant_enh_noclump_residual_GWAS_compartment.tsv.gz, SCZ, DOM, /rds/general/user/eosimo/home/lenhard_prs/LD_ref/EUR_phase3_autosomes_hg19.bed, /rds/general/user/eosimo/home/lenhard_prs/LD_ref/EUR_phase3_autosomes_hg19.bim, /rds/general/user/eosimo/home/lenhard_prs/LD_ref/EUR_phase3_autosomes_hg19.fam]
     
-// //     // cohort_GWAS_enh_list.view()
-// //     // [GWAS_ENH_SNPs_hg19_ALLCHR_SCZ_QC.bed, GWAS_ENH_SNPs_hg19_ALLCHR_SCZ_QC.bim, GWAS_ENH_SNPs_hg19_ALLCHR_SCZ_QC.fam, SCZ_GWAS_QC_nodups.tsv.gz, SCZ, Neural_significant_enh, /rds/general/ephemeral/user/eosimo/ephemeral/HCM_cardiac_enhs/input/enh_bedfiles/Neural_significant_enh.bed, REC, /rds/general/ephemeral/user/eosimo/ephemeral/HCM_cardiac_enhs/input/EPWAS/UKBB_ENH_associations_REC.tsv.gz]
-// //     // [GWAS_ENH_SNPs_hg19_ALLCHR_SCZ_QC.bed, GWAS_ENH_SNPs_hg19_ALLCHR_SCZ_QC.bim, GWAS_ENH_SNPs_hg19_ALLCHR_SCZ_QC.fam, SCZ_GWAS_QC_nodups.tsv.gz, SCZ, Neural_significant_enh, /rds/general/ephemeral/user/eosimo/ephemeral/HCM_cardiac_enhs/input/enh_bedfiles/Neural_significant_enh.bed, DOM, /rds/general/ephemeral/user/eosimo/ephemeral/HCM_cardiac_enhs/input/EPWAS/UKBB_ENH_associations_DOM.tsv.gz]
-// //     // [GWAS_ENH_SNPs_hg19_ALLCHR_SCZ_QC.bed, GWAS_ENH_SNPs_hg19_ALLCHR_SCZ_QC.bim, GWAS_ENH_SNPs_hg19_ALLCHR_SCZ_QC.fam, SCZ_GWAS_QC_nodups.tsv.gz, SCZ, Neural_significant_enh, /rds/general/ephemeral/user/eosimo/ephemeral/HCM_cardiac_enhs/input/enh_bedfiles/Neural_significant_enh.bed, ADD, /rds/general/ephemeral/user/eosimo/ephemeral/HCM_cardiac_enhs/input/EPWAS/UKBB_ENH_associations_ADD.tsv.gz]
+//     PLINK_clump (
+//         //CLUMPING of enhancer-based SNP compartments together 
+//         R_prepare_lists_for_clump.out.lists_before_clump
+//             .combine(LD_reference)
+//     )
+//     // PLINK_clump.out.clumped_SNPs_and_noclump_lists.view()
+//     // [/rds/general/ephemeral/user/eosimo/ephemeral/HCM_cardiac_enhs/work/82/3cd69072a998abd4ba99f1bae51356/GWAS_ENH_SNPs_hg19_ALLCHR_SCZ_QC.bed, /rds/general/ephemeral/user/eosimo/ephemeral/HCM_cardiac_enhs/work/82/3cd69072a998abd4ba99f1bae51356/GWAS_ENH_SNPs_hg19_ALLCHR_SCZ_QC.bim, /rds/general/ephemeral/user/eosimo/ephemeral/HCM_cardiac_enhs/work/82/3cd69072a998abd4ba99f1bae51356/GWAS_ENH_SNPs_hg19_ALLCHR_SCZ_QC.fam, Neural_significant_enh, /rds/general/ephemeral/user/eosimo/ephemeral/HCM_cardiac_enhs/work/82/3cd69072a998abd4ba99f1bae51356/SCZ_REC_Neural_significant_enh_noclump_EPWAS.tsv.gz, /rds/general/ephemeral/user/eosimo/ephemeral/HCM_cardiac_enhs/work/82/3cd69072a998abd4ba99f1bae51356/SCZ_REC_Neural_significant_enh_noclump_residual_GWAS_compartment.tsv.gz, /rds/general/ephemeral/user/eosimo/ephemeral/HCM_cardiac_enhs/work/82/3cd69072a998abd4ba99f1bae51356/SCZ_Neural_significant_enh_clumped_SNPs.clumped, SCZ, REC]
     
-// //     // BASE subsetting
-// //     R_prepare_lists_for_clump (
-// //         // SUBSETS GWAS SNPS INTO ENH COMPARTMENT AND RESIDUAL COMPARTMENT.
-// //         // ########################### IN PREPARATION FOR CLUMPING, DIVIDE P VALUES FOR ENH SNPS BY X TO PRESERVE ENH SNPS ###########################
-// //         cohort_GWAS_enh_list
+
+//     R_split_lists (
+//         // first annotate SNPs with ES of relevant E-P - for ENH SNP list
+//         // ##################################################### GENERATE MODIFIED ORS MULT BY ES OR EXP       ###########################################################
+//         // ##################################################### CAN MULTIPLY P BY VALUE TO RESTORE ENH SNPS P ###########################################################
+//         // output separate lists to calculate split PRSs and also merged one
+//         PLINK_clump.out.clumped_SNPs_and_noclump_lists,//.map { [it, "1"].flatten() }, //######################## multiplier can be set here ########################
+//         annotations
+//     )
+
+    
+//     R_split_lists.out.partitioned 
+//         .combine(R_extract_GWAS_SNPs_into_bed.out.clumped_GWAS)
+//         .combine(UKBB_covariates)
+//         .combine(LD_reference)
+//         .map { [it, "0.5"].flatten() }         // ######################## SET CT THRESHOLD FOR PRSICE ##################
+//         .set{combined_splitlists_bedfile_QCeddata_LDdata_05}
+//     R_split_lists.out.partitioned 
+//         .combine(R_extract_GWAS_SNPs_into_bed.out.clumped_GWAS)
+//         .combine(UKBB_covariates)
+//         .combine(LD_reference)
+//         .map { [it, "0.05"].flatten() }         // ######################## SET CT THRESHOLD FOR PRSICE ##################
+//         .set{combined_splitlists_bedfile_QCeddata_LDdata_005}
+    
+//     combined_splitlists_bedfile_QCeddata_LDdata = combined_splitlists_bedfile_QCeddata_LDdata_05.mix(combined_splitlists_bedfile_QCeddata_LDdata_005)
+//     // combined_splitlists_bedfile_QCeddata_LDdata.view()
+//     // [GWAS_ENH_SNPs_hg19_ALLCHR_SCZ_QC.bed, GWAS_ENH_SNPs_hg19_ALLCHR_SCZ_QC.bim, GWAS_ENH_SNPs_hg19_ALLCHR_SCZ_QC.fam, Neural_significant_enh, Neural_significant_enh_REC_SCZ_X_1_clumped_EPWAS.tsv.gz, Neural_significant_enh_REC_SCZ_clumped_residual_GWAS_compartment.tsv.gz, 1, SCZ, REC, /rds/general/ephemeral/user/eosimo/ephemeral/HCM_cardiac_enhs/work/b0/fcec9ad982f3a82c3b2bef76691d0a/SCZ_clumped_GWAS_QC_nodups.tsv.gz, /rds/general/ephemeral/user/eosimo/ephemeral/HCM_cardiac_enhs/input/biobank/non_missing_10PCs_Jun22.covariate.gz, /rds/general/user/eosimo/home/lenhard_prs/LD_ref/EUR_phase3_autosomes_hg19.bed, /rds/general/user/eosimo/home/lenhard_prs/LD_ref/EUR_phase3_autosomes_hg19.bim, /rds/general/user/eosimo/home/lenhard_prs/LD_ref/EUR_phase3_autosomes_hg19.fam, 0.05]
+//     // [GWAS_ENH_SNPs_hg19_ALLCHR_SCZ_QC.bed, GWAS_ENH_SNPs_hg19_ALLCHR_SCZ_QC.bim, GWAS_ENH_SNPs_hg19_ALLCHR_SCZ_QC.fam, Neural_significant_enh, Neural_significant_enh_REC_SCZ_X_1_clumped_EPWAS.tsv.gz, Neural_significant_enh_REC_SCZ_clumped_residual_GWAS_compartment.tsv.gz, 1, SCZ, REC, /rds/general/ephemeral/user/eosimo/ephemeral/HCM_cardiac_enhs/work/b0/fcec9ad982f3a82c3b2bef76691d0a/SCZ_clumped_GWAS_QC_nodups.tsv.gz, /rds/general/ephemeral/user/eosimo/ephemeral/HCM_cardiac_enhs/input/biobank/non_missing_10PCs_Jun22.covariate.gz, /rds/general/user/eosimo/home/lenhard_prs/LD_ref/EUR_phase3_autosomes_hg19.bed, /rds/general/user/eosimo/home/lenhard_prs/LD_ref/EUR_phase3_autosomes_hg19.bim, /rds/general/user/eosimo/home/lenhard_prs/LD_ref/EUR_phase3_autosomes_hg19.fam, 0.5]
+
+    
+//     PRSice_calculate_PRS_split_partitions(
+//         combined_splitlists_bedfile_QCeddata_LDdata
+//     )
+    
+//     // ########################################### SET NAMES OF MULTIPLIERS ###########################################
+//     PRS_results = 
+//         PRSice_calculate_PRS_split_partitions.out.clumped_TS_ENH_GWAS_compartment_PRS
+//             .join(PRSice_calculate_PRS_split_partitions.out.clumped_residual_GWAS_compartment_PRS)
+//             .join(PRSice_calculate_PRS_split_partitions.out.clumped_merged_GWAS_PRS)
+//             .join(PRSice_calculate_PRS_split_partitions.out.clumped_original_GWAS_PRS)
+//             .map { [it, "enh_ES", "enh_TS_tpm"].flatten() }
+
+
+//     PRS_results.view()
+    
+
+// //     R_final_plot (
+// //         PRS_results
 // //     )
-    
-    
-// //     //    R_prepare_lists_for_clump.out.lists_before_clump
-// //     //         .combine(LD_reference)
-// //     //         .view()
-// //     // [/rds/general/ephemeral/user/eosimo/ephemeral/HCM_cardiac_enhs/work/8c/5832511f6ff56c817623ff8511e5a4/GWAS_ENH_SNPs_hg19_ALLCHR_SCZ_QC.bed, /rds/general/ephemeral/user/eosimo/ephemeral/HCM_cardiac_enhs/work/8c/5832511f6ff56c817623ff8511e5a4/GWAS_ENH_SNPs_hg19_ALLCHR_SCZ_QC.bim, /rds/general/ephemeral/user/eosimo/ephemeral/HCM_cardiac_enhs/work/8c/5832511f6ff56c817623ff8511e5a4/GWAS_ENH_SNPs_hg19_ALLCHR_SCZ_QC.fam, Neural_significant_enh, /rds/general/ephemeral/user/eosimo/ephemeral/HCM_cardiac_enhs/work/8c/5832511f6ff56c817623ff8511e5a4/SCZ_REC_Neural_significant_enh_noclump_EPWAS.tsv.gz, /rds/general/ephemeral/user/eosimo/ephemeral/HCM_cardiac_enhs/work/8c/5832511f6ff56c817623ff8511e5a4/SCZ_REC_Neural_significant_enh_noclump_residual_GWAS_compartment.tsv.gz, SCZ, REC, /rds/general/user/eosimo/home/lenhard_prs/LD_ref/EUR_phase3_autosomes_hg19.bed, /rds/general/user/eosimo/home/lenhard_prs/LD_ref/EUR_phase3_autosomes_hg19.bim, /rds/general/user/eosimo/home/lenhard_prs/LD_ref/EUR_phase3_autosomes_hg19.fam]
-// //     // [/rds/general/ephemeral/user/eosimo/ephemeral/HCM_cardiac_enhs/work/ce/148eaf9bc44e293f60bb7e97ca30b7/GWAS_ENH_SNPs_hg19_ALLCHR_SCZ_QC.bed, /rds/general/ephemeral/user/eosimo/ephemeral/HCM_cardiac_enhs/work/ce/148eaf9bc44e293f60bb7e97ca30b7/GWAS_ENH_SNPs_hg19_ALLCHR_SCZ_QC.bim, /rds/general/ephemeral/user/eosimo/ephemeral/HCM_cardiac_enhs/work/ce/148eaf9bc44e293f60bb7e97ca30b7/GWAS_ENH_SNPs_hg19_ALLCHR_SCZ_QC.fam, Neural_significant_enh, /rds/general/ephemeral/user/eosimo/ephemeral/HCM_cardiac_enhs/work/ce/148eaf9bc44e293f60bb7e97ca30b7/SCZ_DOM_Neural_significant_enh_noclump_EPWAS.tsv.gz, /rds/general/ephemeral/user/eosimo/ephemeral/HCM_cardiac_enhs/work/ce/148eaf9bc44e293f60bb7e97ca30b7/SCZ_DOM_Neural_significant_enh_noclump_residual_GWAS_compartment.tsv.gz, SCZ, DOM, /rds/general/user/eosimo/home/lenhard_prs/LD_ref/EUR_phase3_autosomes_hg19.bed, /rds/general/user/eosimo/home/lenhard_prs/LD_ref/EUR_phase3_autosomes_hg19.bim, /rds/general/user/eosimo/home/lenhard_prs/LD_ref/EUR_phase3_autosomes_hg19.fam]
-    
-// //     PLINK_clump (
-// //         //CLUMPING of enhancer-based SNP compartments together 
-// //         R_prepare_lists_for_clump.out.lists_before_clump
-// //             .combine(LD_reference)
-// //     )
-// //     // PLINK_clump.out.clumped_SNPs_and_noclump_lists.view()
-// //     // [/rds/general/ephemeral/user/eosimo/ephemeral/HCM_cardiac_enhs/work/82/3cd69072a998abd4ba99f1bae51356/GWAS_ENH_SNPs_hg19_ALLCHR_SCZ_QC.bed, /rds/general/ephemeral/user/eosimo/ephemeral/HCM_cardiac_enhs/work/82/3cd69072a998abd4ba99f1bae51356/GWAS_ENH_SNPs_hg19_ALLCHR_SCZ_QC.bim, /rds/general/ephemeral/user/eosimo/ephemeral/HCM_cardiac_enhs/work/82/3cd69072a998abd4ba99f1bae51356/GWAS_ENH_SNPs_hg19_ALLCHR_SCZ_QC.fam, Neural_significant_enh, /rds/general/ephemeral/user/eosimo/ephemeral/HCM_cardiac_enhs/work/82/3cd69072a998abd4ba99f1bae51356/SCZ_REC_Neural_significant_enh_noclump_EPWAS.tsv.gz, /rds/general/ephemeral/user/eosimo/ephemeral/HCM_cardiac_enhs/work/82/3cd69072a998abd4ba99f1bae51356/SCZ_REC_Neural_significant_enh_noclump_residual_GWAS_compartment.tsv.gz, /rds/general/ephemeral/user/eosimo/ephemeral/HCM_cardiac_enhs/work/82/3cd69072a998abd4ba99f1bae51356/SCZ_Neural_significant_enh_clumped_SNPs.clumped, SCZ, REC]
-    
-
-// //     R_split_lists (
-// //         // first annotate SNPs with ES of relevant E-P - for ENH SNP list
-// //         // ##################################################### GENERATE MODIFIED ORS MULT BY ES OR EXP       ###########################################################
-// //         // ##################################################### CAN MULTIPLY P BY VALUE TO RESTORE ENH SNPS P ###########################################################
-// //         // output separate lists to calculate split PRSs and also merged one
-// //         PLINK_clump.out.clumped_SNPs_and_noclump_lists,//.map { [it, "1"].flatten() }, //######################## multiplier can be set here ########################
-// //         annotations
-// //     )
-
-    
-// //     R_split_lists.out.partitioned 
-// //         .combine(R_extract_GWAS_SNPs_into_bed.out.clumped_GWAS)
-// //         .combine(UKBB_covariates)
-// //         .combine(LD_reference)
-// //         .map { [it, "0.5"].flatten() }         // ######################## SET CT THRESHOLD FOR PRSICE ##################
-// //         .set{combined_splitlists_bedfile_QCeddata_LDdata_05}
-// //     R_split_lists.out.partitioned 
-// //         .combine(R_extract_GWAS_SNPs_into_bed.out.clumped_GWAS)
-// //         .combine(UKBB_covariates)
-// //         .combine(LD_reference)
-// //         .map { [it, "0.05"].flatten() }         // ######################## SET CT THRESHOLD FOR PRSICE ##################
-// //         .set{combined_splitlists_bedfile_QCeddata_LDdata_005}
-    
-// //     combined_splitlists_bedfile_QCeddata_LDdata = combined_splitlists_bedfile_QCeddata_LDdata_05.mix(combined_splitlists_bedfile_QCeddata_LDdata_005)
-// //     // combined_splitlists_bedfile_QCeddata_LDdata.view()
-// //     // [GWAS_ENH_SNPs_hg19_ALLCHR_SCZ_QC.bed, GWAS_ENH_SNPs_hg19_ALLCHR_SCZ_QC.bim, GWAS_ENH_SNPs_hg19_ALLCHR_SCZ_QC.fam, Neural_significant_enh, Neural_significant_enh_REC_SCZ_X_1_clumped_EPWAS.tsv.gz, Neural_significant_enh_REC_SCZ_clumped_residual_GWAS_compartment.tsv.gz, 1, SCZ, REC, /rds/general/ephemeral/user/eosimo/ephemeral/HCM_cardiac_enhs/work/b0/fcec9ad982f3a82c3b2bef76691d0a/SCZ_clumped_GWAS_QC_nodups.tsv.gz, /rds/general/ephemeral/user/eosimo/ephemeral/HCM_cardiac_enhs/input/biobank/non_missing_10PCs_Jun22.covariate.gz, /rds/general/user/eosimo/home/lenhard_prs/LD_ref/EUR_phase3_autosomes_hg19.bed, /rds/general/user/eosimo/home/lenhard_prs/LD_ref/EUR_phase3_autosomes_hg19.bim, /rds/general/user/eosimo/home/lenhard_prs/LD_ref/EUR_phase3_autosomes_hg19.fam, 0.05]
-// //     // [GWAS_ENH_SNPs_hg19_ALLCHR_SCZ_QC.bed, GWAS_ENH_SNPs_hg19_ALLCHR_SCZ_QC.bim, GWAS_ENH_SNPs_hg19_ALLCHR_SCZ_QC.fam, Neural_significant_enh, Neural_significant_enh_REC_SCZ_X_1_clumped_EPWAS.tsv.gz, Neural_significant_enh_REC_SCZ_clumped_residual_GWAS_compartment.tsv.gz, 1, SCZ, REC, /rds/general/ephemeral/user/eosimo/ephemeral/HCM_cardiac_enhs/work/b0/fcec9ad982f3a82c3b2bef76691d0a/SCZ_clumped_GWAS_QC_nodups.tsv.gz, /rds/general/ephemeral/user/eosimo/ephemeral/HCM_cardiac_enhs/input/biobank/non_missing_10PCs_Jun22.covariate.gz, /rds/general/user/eosimo/home/lenhard_prs/LD_ref/EUR_phase3_autosomes_hg19.bed, /rds/general/user/eosimo/home/lenhard_prs/LD_ref/EUR_phase3_autosomes_hg19.bim, /rds/general/user/eosimo/home/lenhard_prs/LD_ref/EUR_phase3_autosomes_hg19.fam, 0.5]
-
-    
-// //     PRSice_calculate_PRS_split_partitions(
-// //         combined_splitlists_bedfile_QCeddata_LDdata
-// //     )
-    
-// //     // ########################################### SET NAMES OF MULTIPLIERS ###########################################
-// //     PRS_results = 
-// //         PRSice_calculate_PRS_split_partitions.out.clumped_TS_ENH_GWAS_compartment_PRS
-// //             .join(PRSice_calculate_PRS_split_partitions.out.clumped_residual_GWAS_compartment_PRS)
-// //             .join(PRSice_calculate_PRS_split_partitions.out.clumped_merged_GWAS_PRS)
-// //             .join(PRSice_calculate_PRS_split_partitions.out.clumped_original_GWAS_PRS)
-// //             .map { [it, "enh_ES", "enh_TS_tpm"].flatten() }
-
-
-// //     PRS_results.view()
-    
-
-// // //     R_final_plot (
-// // //         PRS_results
-// // //     )
 
 
 }
