@@ -1,5 +1,5 @@
 process PLINK2_ASSOC_GLM {
-    tag "$meta"
+    tag "$condition"
     // debug true
     label 'process_high_memory'
     cache 'lenient'
@@ -7,12 +7,13 @@ process PLINK2_ASSOC_GLM {
     // errorStrategy 'ignore'
 
     input: 
-    tuple val(meta), path (bedfilepath), path (bim), path (fam), path(enhancers_bed)
+    // [SCZ, SCZ_ALLCHR_SCZ_QC.bed, SCZ_ALLCHR_SCZ_QC.bim, SCZ_ALLCHR_SCZ_QC.fam, SCZ_GWAS_QC_nodups.tsv.gz]
+    tuple val(condition), path (bed_QC), path (bim_QC), path (fam_QC), path(GWAS_QC), path(enhancers_bed)
     each path(UKBB_covariates)
     
 
     output:
-    tuple val(meta), path ("*_ORs_PLINK2_logistic_firth_fallback_covar_recessive.PHENO1.glm.logistic.hybrid"), path ("*_ORs_PLINK2_logistic_firth_fallback_covar_standard.PHENO1.glm.logistic.hybrid"), path("*_ORs_PLINK2_logistic_firth_fallback_covar_dominant.PHENO1.glm.logistic.hybrid"),path("*fallback_covar_recessive.frq"), emit: associations
+    tuple val(condition), path ("*_ORs_PLINK2_logistic_firth_fallback_covar_recessive.PHENO1.glm.logistic.hybrid"), path ("*_ORs_PLINK2_logistic_firth_fallback_covar_standard.PHENO1.glm.logistic.hybrid"), path("*_ORs_PLINK2_logistic_firth_fallback_covar_dominant.PHENO1.glm.logistic.hybrid"),path("*fallback_covar_recessive.frq"), emit: associations
     path("*.snplist")
     
     
@@ -24,53 +25,53 @@ process PLINK2_ASSOC_GLM {
     plink2 \\
         --threads $task.cpus \\
         --memory $mem_mb \\
-        --bfile ${bedfilepath.baseName} \\
+        --bfile ${bed_QC.baseName} \\
         --extract bed1 ${enhancers_bed} \\
         --chr 1-22 \\
         --write-snplist \\
         --glm recessive firth-fallback omit-ref hide-covar \\
         --ci 0.95 \\
         --covar ${UKBB_covariates} \\
-        --out ${meta}_ORs_PLINK2_logistic_firth_fallback_covar_recessive
+        --out ${condition}_ORs_PLINK2_logistic_firth_fallback_covar_recessive
      plink \\
-            --bfile ${bedfilepath.baseName} \\
-            --extract ${meta}_ORs_PLINK2_logistic_firth_fallback_covar_recessive.snplist \\
+            --bfile ${bed_QC.baseName} \\
+            --extract ${condition}_ORs_PLINK2_logistic_firth_fallback_covar_recessive.snplist \\
             --freq \\
-            --out ${meta}_ORs_PLINK2_logistic_firth_fallback_covar_recessive
+            --out ${condition}_ORs_PLINK2_logistic_firth_fallback_covar_recessive
 
     plink2 \\
         --threads $task.cpus \\
         --memory $mem_mb \\
-        --bfile ${bedfilepath.baseName} \\
+        --bfile ${bed_QC.baseName} \\
         --extract bed1 ${enhancers_bed} \\
         --chr 1-22 \\
         --write-snplist \\
         --glm firth-fallback omit-ref hide-covar \\
         --ci 0.95 \\
         --covar ${UKBB_covariates} \\
-        --out ${meta}_ORs_PLINK2_logistic_firth_fallback_covar_standard
+        --out ${condition}_ORs_PLINK2_logistic_firth_fallback_covar_standard
     plink \\
-            --bfile ${bedfilepath.baseName} \\
-            --extract ${meta}_ORs_PLINK2_logistic_firth_fallback_covar_standard.snplist \\
+            --bfile ${bed_QC.baseName} \\
+            --extract ${condition}_ORs_PLINK2_logistic_firth_fallback_covar_standard.snplist \\
             --freq \\
-            --out ${meta}_ORs_PLINK2_logistic_firth_fallback_covar_standard
+            --out ${condition}_ORs_PLINK2_logistic_firth_fallback_covar_standard
     
     plink2 \\
         --threads $task.cpus \\
         --memory $mem_mb \\
-        --bfile ${bedfilepath.baseName} \\
+        --bfile ${bed_QC.baseName} \\
         --extract bed1 ${enhancers_bed} \\
         --chr 1-22 \\
         --write-snplist \\
         --glm dominant firth-fallback omit-ref hide-covar \\
         --ci 0.95 \\
         --covar ${UKBB_covariates} \\
-        --out ${meta}_ORs_PLINK2_logistic_firth_fallback_covar_dominant
+        --out ${condition}_ORs_PLINK2_logistic_firth_fallback_covar_dominant
      plink \\
             --bfile ${bedfilepath.baseName} \\
-            --extract ${meta}_ORs_PLINK2_logistic_firth_fallback_covar_dominant.snplist \\
+            --extract ${condition}_ORs_PLINK2_logistic_firth_fallback_covar_dominant.snplist \\
             --freq \\
-            --out ${meta}_ORs_PLINK2_logistic_firth_fallback_covar_dominant
+            --out ${condition}_ORs_PLINK2_logistic_firth_fallback_covar_dominant
 
     """
 }
