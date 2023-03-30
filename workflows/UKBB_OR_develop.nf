@@ -202,13 +202,15 @@ workflow UKBB_OR_develop {
     
     
     PLINK_PRODUCE_QC_DATASET.out.target_QC
-        .combine(enhancer_lists_bed_files.map{it -> it[1]})
+        .combine(enhancer_lists_bed_files)
         .combine(enhancer_EPWAS_files)
         .map { it.flatten() }
         .set{cohort_GWAS_enh_list}
     
-    cohort_GWAS_enh_list.view()
-
+    // cohort_GWAS_enh_list.view()
+    // [SCZ, /rds/general/ephemeral/user/eosimo/ephemeral/UKBB_OR_develop/work/d7/d302e50863cd085dbe4f45b217ae25/SCZ_ALLCHR_SCZ_QC.bed, /rds/general/ephemeral/user/eosimo/ephemeral/UKBB_OR_develop/work/d7/d302e50863cd085dbe4f45b217ae25/SCZ_ALLCHR_SCZ_QC.bim, /rds/general/ephemeral/user/eosimo/ephemeral/UKBB_OR_develop/work/d7/d302e50863cd085dbe4f45b217ae25/SCZ_ALLCHR_SCZ_QC.fam, /rds/general/ephemeral/user/eosimo/ephemeral/UKBB_OR_develop/work/d7/d302e50863cd085dbe4f45b217ae25/SCZ_GWAS_QC_nodups.tsv.gz, /rds/general/ephemeral/user/eosimo/ephemeral/UKBB_OR_develop/input/validation/enhancer_files/Neural_significant_enh.bed, REC, /rds/general/ephemeral/user/eosimo/ephemeral/UKBB_OR_develop/work/29/55fbfe539be2822470efedd01e1707/UKBB_ENH_associations_REC.tsv.gz]
+    // [SCZ, /rds/general/ephemeral/user/eosimo/ephemeral/UKBB_OR_develop/work/d7/d302e50863cd085dbe4f45b217ae25/SCZ_ALLCHR_SCZ_QC.bed, /rds/general/ephemeral/user/eosimo/ephemeral/UKBB_OR_develop/work/d7/d302e50863cd085dbe4f45b217ae25/SCZ_ALLCHR_SCZ_QC.bim, /rds/general/ephemeral/user/eosimo/ephemeral/UKBB_OR_develop/work/d7/d302e50863cd085dbe4f45b217ae25/SCZ_ALLCHR_SCZ_QC.fam, /rds/general/ephemeral/user/eosimo/ephemeral/UKBB_OR_develop/work/d7/d302e50863cd085dbe4f45b217ae25/SCZ_GWAS_QC_nodups.tsv.gz, /rds/general/ephemeral/user/eosimo/ephemeral/UKBB_OR_develop/input/validation/enhancer_files/Neural_significant_enh.bed, ADD, /rds/general/ephemeral/user/eosimo/ephemeral/UKBB_OR_develop/work/29/55fbfe539be2822470efedd01e1707/UKBB_ENH_associations_ADD.tsv.gz]
+    // [SCZ, /rds/general/ephemeral/user/eosimo/ephemeral/UKBB_OR_develop/work/d7/d302e50863cd085dbe4f45b217ae25/SCZ_ALLCHR_SCZ_QC.bed, /rds/general/ephemeral/user/eosimo/ephemeral/UKBB_OR_develop/work/d7/d302e50863cd085dbe4f45b217ae25/SCZ_ALLCHR_SCZ_QC.bim, /rds/general/ephemeral/user/eosimo/ephemeral/UKBB_OR_develop/work/d7/d302e50863cd085dbe4f45b217ae25/SCZ_ALLCHR_SCZ_QC.fam, /rds/general/ephemeral/user/eosimo/ephemeral/UKBB_OR_develop/work/d7/d302e50863cd085dbe4f45b217ae25/SCZ_GWAS_QC_nodups.tsv.gz, /rds/general/ephemeral/user/eosimo/ephemeral/UKBB_OR_develop/input/validation/enhancer_files/Neural_significant_enh.bed, DOM, /rds/general/ephemeral/user/eosimo/ephemeral/UKBB_OR_develop/work/29/55fbfe539be2822470efedd01e1707/UKBB_ENH_associations_DOM.tsv.gz]
 
 //     // BASE subsetting
 //     R_prepare_lists_for_clump (
