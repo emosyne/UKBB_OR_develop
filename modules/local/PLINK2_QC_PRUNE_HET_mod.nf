@@ -12,7 +12,7 @@ process PLINK2_QC_PRUNE_HET {
 
     output:
     
-    tuple val(condition), path (bedfilepath), path (bim), path (fam), path ("*.prune.in"), path ("*.het"),  path ("*.prune.in"), path ("*.het"), emit: pruned_variants_het
+    tuple val(condition), path (bedfilepath), path (bim), path (fam), path ("*.prune.in"), path ("*.het"),  emit: pruned_variants_het
     // path("*.log")
     
 
