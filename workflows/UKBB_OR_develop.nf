@@ -230,7 +230,8 @@ workflow UKBB_OR_develop {
             .combine(LD_reference, by: [0])
             .map{it.flatten()}
     )
-    PLINK_clump.out.clumped_SNPs_and_noclump_lists.view()
+    // PLINK_clump.out.clumped_SNPs_and_noclump_lists.view()
+    // [/rds/general/ephemeral/user/eosimo/ephemeral/UKBB_OR_develop/work/44/54ade213669dde5774acd17012e2a9/SCZ_ALLCHR_SCZ_QC.bed, /rds/general/ephemeral/user/eosimo/ephemeral/UKBB_OR_develop/work/44/54ade213669dde5774acd17012e2a9/SCZ_ALLCHR_SCZ_QC.bim, /rds/general/ephemeral/user/eosimo/ephemeral/UKBB_OR_develop/work/44/54ade213669dde5774acd17012e2a9/SCZ_ALLCHR_SCZ_QC.fam, Neural_significant_enh, /rds/general/ephemeral/user/eosimo/ephemeral/UKBB_OR_develop/work/44/54ade213669dde5774acd17012e2a9/SCZ_REC_Neural_significant_enh_noclump_EPWAS.tsv.gz, /rds/general/ephemeral/user/eosimo/ephemeral/UKBB_OR_develop/work/44/54ade213669dde5774acd17012e2a9/SCZ_REC_Neural_significant_enh_noclump_residual_GWAS_compartment.tsv.gz, /rds/general/ephemeral/user/eosimo/ephemeral/UKBB_OR_develop/work/44/54ade213669dde5774acd17012e2a9/SCZ_Neural_significant_enh_clumped_SNPs.clumped, SCZ, REC]
     
 
     R_split_lists (
