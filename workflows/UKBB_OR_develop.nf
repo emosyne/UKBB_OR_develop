@@ -155,8 +155,8 @@ workflow UKBB_OR_develop {
         PLINK2_QC_PRUNE_HET.out.pruned_variants_het
              .join(PLINK_base_GWAS_QC_and_clump.out.GWAS_QC_noClump)
     )
-    R_PRS_QC.out.QC_het_a1_mismatch.view()
-
+    // R_PRS_QC.out.QC_het_a1_mismatch.view()
+    //[SCZ, /rds/general/ephemeral/user/eosimo/ephemeral/UKBB_OR_develop/work/da/7f6f852e60e9d996747fda3f1d5aa1/SCZ_ALLCHR.bed, /rds/general/ephemeral/user/eosimo/ephemeral/UKBB_OR_develop/work/da/7f6f852e60e9d996747fda3f1d5aa1/SCZ_ALLCHR.bim, /rds/general/ephemeral/user/eosimo/ephemeral/UKBB_OR_develop/work/da/7f6f852e60e9d996747fda3f1d5aa1/SCZ_ALLCHR.fam, /rds/general/ephemeral/user/eosimo/ephemeral/UKBB_OR_develop/work/da/7f6f852e60e9d996747fda3f1d5aa1/SCZ_GWAS_QC_nodups.tsv.gz, /rds/general/ephemeral/user/eosimo/ephemeral/UKBB_OR_develop/work/da/7f6f852e60e9d996747fda3f1d5aa1/SCZ_het_valid_out_vs_GWAS.sample, /rds/general/ephemeral/user/eosimo/ephemeral/UKBB_OR_develop/work/da/7f6f852e60e9d996747fda3f1d5aa1/SCZ_a1_cohort_bim_vs_GWAS, /rds/general/ephemeral/user/eosimo/ephemeral/UKBB_OR_develop/work/da/7f6f852e60e9d996747fda3f1d5aa1/SCZ_mismatching_SNPs_vs_GWAS]
 
     // TARGET QC 3:  
     // Remove individuals with heterozigosity F coefficients that are more than 3 standard deviation (SD) units from the mean
