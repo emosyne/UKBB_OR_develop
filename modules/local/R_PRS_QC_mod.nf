@@ -14,7 +14,7 @@ process R_PRS_QC {
     
 
     output:
-    tuple val(condition), path(bed), path(bim), path(fam), path(GWAS_QC), path ("*_het_valid_out.sample"), path("*_a1_bim"), path("*_mismatching_SNPs"),  emit: QC_het_a1_mismatch
+    tuple val(condition), path(bed), path(bim), path(fam), path(GWAS_QC), path ("*_het_valid_out_vs_GWAS.sample"), path("*_a1_cohort_bim_vs_GWAS*"), path("*_mismatching_SNPs_vs_GWAS*"),  emit: QC_het_a1_mismatch
     
 
 

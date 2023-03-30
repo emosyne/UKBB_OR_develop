@@ -10,14 +10,14 @@ print(args)
 
 hetfile = args[8]
 target_bimfile = args[9]
-HCM_GWAS = args[10]
+GWAS = args[10]
 (cohort = args[11])
 
 #OUTPUT
-het_valid_out = paste0(cohort,"_het_valid_out_vs_HCM_GWAS.sample")
-restranded_recoded_cohort_bim = paste0(cohort,"_a1_cohort_bim_vs_HCM_GWAS")
-mismatching_SNPs = paste0(cohort,"_mismatching_SNPs_vs_HCM_GWAS")
-# annotated_mismatching_file = paste0(cohort,"_HCM_GWAS_vs_UKBB_annotated_mismatching.csv")
+het_valid_out = paste0(cohort,"_het_valid_out_vs_GWAS.sample")
+restranded_recoded_cohort_bim = paste0(cohort,"_a1_cohort_bim_vs_GWAS")
+mismatching_SNPs = paste0(cohort,"_mismatching_SNPs_vs_GWAS")
+# annotated_mismatching_file = paste0(cohort,"_GWAS_vs_UKBB_annotated_mismatching.csv")
 
 
 #Very high or low heterozygosity rates in individuals could be due to DNA contamination or to high levels of inbreeding. Therefore, samples with extreme heterozygosity are typically removed prior to downstream analyses. 
@@ -46,10 +46,10 @@ cohort_bim <- read.table(target_bimfile)
 colnames(cohort_bim) <- c("CHR", "SNP", "CM", "BP", "B.A1", "B.A2")
 cohort_bim
 # Read in the GWAS data
-GWAS <- fread(file=HCM_GWAS, select = c("CHR", "SNP", "POS", "A1", "A2",  "P"))
+GWAS <- fread(file=GWAS, select = c("CHR", "SNP", "POS", "A1", "A2",  "P"))
 GWAS <- GWAS %>% rename(BP=POS)
 
-  # read.table(gzfile(HCM_GWAS),
+  # read.table(gzfile(GWAS),
   #            header = T,
   #            stringsAsFactors = F, 
   #            sep="\t")
