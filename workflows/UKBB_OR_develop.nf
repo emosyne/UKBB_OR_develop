@@ -145,33 +145,33 @@ workflow UKBB_OR_develop {
         PLINK_MERGE.out.all_chromosomes_extracted
     )
     
-    PLINK2_QC_PRUNE_HET.out.pruned_variants_het
-            .join(PLINK_base_GWAS_QC_and_clump.out.GWAS_QC_noClump)
-            .view()
-    // [SCZ, /rds/general/ephemeral/user/eosimo/ephemeral/UKBB_OR_develop/work/f3/495c0712a682b80e3532e0335a2367/SCZ_ALLCHR.prune.in, /rds/general/ephemeral/user/eosimo/ephemeral/UKBB_OR_develop/work/f3/495c0712a682b80e3532e0335a2367/SCZ_ALLCHR.het, /rds/general/ephemeral/user/eosimo/ephemeral/UKBB_OR_develop/work/a7/cd043907aa1a34aeb4b22292c46b14/SCZ_GWAS_QC_nodups.tsv.gz]
+    // PLINK2_QC_PRUNE_HET.out.pruned_variants_het
+    //         .join(PLINK_base_GWAS_QC_and_clump.out.GWAS_QC_noClump)
+    //         .view()
+    // 
 
     // TARGET QC 2:  remove heterogeneity outliers, produced A1 alleles, and mismatching SNPs list to be removed
     // produce QC_het_a1_mismatch, 
-    // R_PRS_QC ( // calculates mismatching SNPs and recodes all alleles to GWAS base
-    //     PLINK2_QC_PRUNE_HET.out.pruned_variants_het
-    //          .join(PLINK_base_GWAS_QC_and_clump.out.GWAS_QC_noClump)
-    // )
-    // R_PRS_QC.out.QC_het_a1_mismatch.view()
-    // //[/rds/general/ephemeral/user/eosimo/ephemeral/HCM_cardiac_enhs/work/16/7e26f02ebc884d13aa58e154e8c3a7/GWAS_ENH_SNPs_hg19_ALLCHR.bed, /rds/general/ephemeral/user/eosimo/ephemeral/HCM_cardiac_enhs/work/16/7e26f02ebc884d13aa58e154e8c3a7/GWAS_ENH_SNPs_hg19_ALLCHR.bim, /rds/general/ephemeral/user/eosimo/ephemeral/HCM_cardiac_enhs/work/16/7e26f02ebc884d13aa58e154e8c3a7/GWAS_ENH_SNPs_hg19_ALLCHR.fam, /rds/general/ephemeral/user/eosimo/ephemeral/HCM_cardiac_enhs/work/16/7e26f02ebc884d13aa58e154e8c3a7/SCZ_GWAS_QC_nodups.tsv.gz, /rds/general/ephemeral/user/eosimo/ephemeral/HCM_cardiac_enhs/work/16/7e26f02ebc884d13aa58e154e8c3a7/SCZ_het_valid_out_vs_HCM_GWAS.sample, /rds/general/ephemeral/user/eosimo/ephemeral/HCM_cardiac_enhs/work/16/7e26f02ebc884d13aa58e154e8c3a7/SCZ_a1_cohort_bim_vs_HCM_GWAS, /rds/general/ephemeral/user/eosimo/ephemeral/HCM_cardiac_enhs/work/16/7e26f02ebc884d13aa58e154e8c3a7/SCZ_mismatching_SNPs_vs_HCM_GWAS, SCZ]
+    R_PRS_QC ( // calculates mismatching SNPs and recodes all alleles to GWAS base
+        PLINK2_QC_PRUNE_HET.out.pruned_variants_het
+             .join(PLINK_base_GWAS_QC_and_clump.out.GWAS_QC_noClump)
+    )
+    R_PRS_QC.out.QC_het_a1_mismatch.view()
 
-    // // TARGET QC 3:  
-    // // Remove individuals with heterozigosity F coefficients that are more than 3 standard deviation (SD) units from the mean
-    // // also remove mismatching SNPs
-    // // also standard QC --maf 0.01 --mac 100 --geno 0.1 --hwe 1e-15 --mind 0.1 
-    // PLINK_PRODUCE_QC_DATASET ( 
-    //     R_PRS_QC.out.QC_het_a1_mismatch
-    // )
 
-    // PLINK_PRODUCE_QC_DATASET.out.all_chromosomes_QC.view()
+    // TARGET QC 3:  
+    // Remove individuals with heterozigosity F coefficients that are more than 3 standard deviation (SD) units from the mean
+    // also remove mismatching SNPs
+    // also standard QC --maf 0.01 --mac 100 --geno 0.1 --hwe 1e-15 --mind 0.1 
+    PLINK_PRODUCE_QC_DATASET ( 
+        R_PRS_QC.out.QC_het_a1_mismatch
+    )
+
+    PLINK_PRODUCE_QC_DATASET.out.target_QC.view()
 
 
     // PLINK2_ASSOC_GLM(
-    //     PLINK_PRODUCE_QC_DATASET.out.all_chromosomes_QC
+    //     PLINK_PRODUCE_QC_DATASET.out.target_QC
     //         //join will join all_chromosomes_extracted with the SNP list output from step 1 by condition (meta)
     //         .join(enhancer_lists_bed_files, by: [0]),// ENH hg19 bed file
     //     UKBB_covariates
