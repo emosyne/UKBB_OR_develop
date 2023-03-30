@@ -168,6 +168,7 @@ workflow UKBB_OR_develop {
 
     PLINK_PRODUCE_QC_DATASET.out.target_QC
             .combine(enhancer_lists_bed_files.map{it -> it[1]})
+            .view()
     // [SCZ, SCZ_ALLCHR_SCZ_QC.bed, SCZ_ALLCHR_SCZ_QC.bim, SCZ_ALLCHR_SCZ_QC.fam, SCZ_GWAS_QC_nodups.tsv.gz]
 
 
