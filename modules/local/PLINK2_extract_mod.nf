@@ -2,7 +2,7 @@ process PLINK2_EXTRACT {
     // debug true
     label 'process_high_memory'
     // maxForks 4
-    tag "$meta"
+    // tag "$meta"
     // errorStrategy = 'finish' 
     container 'emosyne/plink2:1.23'
     cache 'lenient'
