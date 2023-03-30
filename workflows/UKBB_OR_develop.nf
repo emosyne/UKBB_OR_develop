@@ -247,13 +247,13 @@ workflow UKBB_OR_develop {
     R_split_lists.out.partitioned 
         .combine(R_extract_GWAS_SNPs_into_bed.out.clumped_GWAS)
         .combine(UKBB_covariates)
-        .combine(LD_reference)
+        .combine( Channel.from("bed","bim","fam").map { ext -> [file("$ld_ref_dir/EUR_phase3_autosomes_hg19.${ext}")] }) //ld ref
         .map { [it, "0.5"].flatten() }         // ######################## SET CT THRESHOLD FOR PRSICE ##################
         .set{combined_splitlists_bedfile_QCeddata_LDdata_05}
     R_split_lists.out.partitioned 
         .combine(R_extract_GWAS_SNPs_into_bed.out.clumped_GWAS)
         .combine(UKBB_covariates)
-        .combine(LD_reference)
+        .combine( Channel.from("bed","bim","fam").map { ext -> [file("$ld_ref_dir/EUR_phase3_autosomes_hg19.${ext}")] }) //ld ref
         .map { [it, "0.05"].flatten() }         // ######################## SET CT THRESHOLD FOR PRSICE ##################
         .set{combined_splitlists_bedfile_QCeddata_LDdata_005}
     
