@@ -79,6 +79,7 @@ gwas_GR
 
 
 
+
 #plot OR figure
 
 (plot=merge %>%
