@@ -16,7 +16,7 @@ PLINK_ORs_recessive = args[9]
 PLINK_ORs_dominant = args[10]
 PLINK_ORs_additive = args[11]
 full_GWAS = args[12]
-SNP_frq = data.table::fread(args[13])
+SNP_frq = data.table::fread(args[13], select = c("SNP","MAF"))
 
 
 (results_per_snp <- rbind(
