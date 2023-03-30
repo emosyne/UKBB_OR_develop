@@ -9,7 +9,7 @@ process R_prepare_lists_for_clump {
     
 
     input:
-    // [SCZ, SCZ_ALLCHR_SCZ_QC.bed, SCZ_ALLCHR_SCZ_QC.bim, SCZ_ALLCHR_SCZ_QC.fam, SCZ_GWAS_QC_nodups.tsv.gz, Neural_significant_enh.bed, 
+    // [SCZ, SCZ_ALLCHR_SCZ_QC.bed, SCZ_ALLCHR_SCZ_QC.bim, SCZ_ALLCHR_SCZ_QC.fam, SCZ_GWAS_QC_nodups.tsv.gz, Neural_significant_enh, Neural_significant_enh.bed, 
         // REC, UKBB_ENH_associations_REC.tsv.gz]
     tuple val(condition), path(bed_QC),  path(bim_QC), path(fam_QC), path (QCed_GWAS),  val(ENH_list), path(ENH_bed), \
         val(EPWAS_model), path(ENH_EPwas)
