@@ -78,23 +78,24 @@ gwas_GR
 
 
 
+
 #plot OR figure
 
 (plot=merge %>%
-  dplyr::select(SNP, A1, TEST,OR, L95,U95,P, closest_PGC_OR, closest_PGC_P, closest_PGC_SNP) %>% 
-  pivot_wider(id_cols = c(SNP, A1,closest_PGC_OR, closest_PGC_P, closest_PGC_SNP), names_from = TEST, values_from = c(OR,L95,U95,P)) %>% 
-  dplyr::filter((P_DOM<0.005 )) %>%#| P_REC<0.001
+  dplyr::select(SNP, A1, TEST,OR, L95,U95,P, closest_PGC_OR, closest_PGC_P, closest_PGC_SNP, MAF) %>% 
+  pivot_wider(id_cols = c(SNP, A1,closest_PGC_OR, closest_PGC_P, closest_PGC_SNP, MAF), names_from = TEST, values_from = c(OR,L95,U95,P)) %>% 
+  dplyr::filter((P_DOM<0.001 )) %>%#| P_REC<0.001
   dplyr::mutate(SNP=factor(SNP), SNP = fct_reorder(SNP, OR_DOM, .na_rm = T))
 )
 plot[grep(x = plot$SNP, pattern = "rs3438"),]
 
 colours = values=MetBrewer::met.brewer("Austria", 4)
 
-(add_dominant = ggplot(  data = plot , aes(x=SNP ) ) + 
+(add_dominant = ggplot(  data = plot , aes(x=SNP , y=OR_DOM, label=round(MAF,2)) ) + 
     scale_color_gradientn(colours = c(colours[4],"gray","gray"),
-                          values = scales::rescale(c(0,0.005,1)), breaks = c(0,1),
+                          values = scales::rescale(c(0,0.001,1)), breaks = c(0,1),
                           guide = "colorbar", limits=c(0,1),name = "BH-adjusted p value",)+
-    geom_point( 
+    geom_point(
       alpha=1,
       aes(
         y=closest_PGC_OR,
@@ -108,6 +109,7 @@ colours = values=MetBrewer::met.brewer("Austria", 4)
         ymax = U95_ADD#,         col=OR_1_p
       )
     ) +
+    ggrepel::geom_text_repel(size = 2,  show.legend = F, min.segment.length = 0)+
     geom_pointrange( 
       color=colours[2], fill="white", alpha=0.6,
       aes(
@@ -123,11 +125,11 @@ colours = values=MetBrewer::met.brewer("Austria", 4)
     coord_flip() +
     theme_bw()+
     theme(legend.position = "none",
-          axis.text.y = element_text(size = 6), 
-          title = element_text(size = 8)) + 
-    ylab("log-transformed OR (p<0.005 for dominant) for schizophrenia")+
-    labs(title =  paste0(condition, " ORs for enhancer-based SNPs."),
-         subtitle = "Blue: dominant model. Red: additive model.\nSmall dots: closest PGC SNP - yellow if p<0.005"))
+          axis.text.y = element_text(size = 8), title = element_text(size = 8)
+    )  + 
+    ylab("log-transformed OR (p<0.001 for dominant) for schizophrenia")+
+    labs(title =  paste0("Schizophrenia ORs for enhancer-based SNPs."),
+         subtitle = "Blue: dominant model. Red: additive model. Small dots: closest PGC SNP - yellow if p<0.001"))
 
 ggsave(
   filename = paste0("figs/PLINK_ORs_", condition, "_add_dom_", Sys.Date(),"_UKBB.pdf"), 
@@ -139,13 +141,13 @@ ggsave(
 (plot=merge %>%
     dplyr::select(SNP, A1, TEST,OR, L95,U95,P, closest_PGC_OR, closest_PGC_P, closest_PGC_SNP) %>% 
     pivot_wider(id_cols = c(SNP, A1,closest_PGC_OR, closest_PGC_P, closest_PGC_SNP), names_from = TEST, values_from = c(OR,L95,U95,P)) %>% 
-    dplyr::filter((P_REC<0.005 )) %>%#| P_REC<0.001
+    dplyr::filter((P_REC<0.001 )) %>%#| P_REC<0.001
     dplyr::mutate(SNP=factor(SNP), SNP = fct_reorder(SNP, OR_REC, .na_rm = T))
 )
 plot[grep(x = plot$SNP, pattern = "rs3438"),]
-(recessive = ggplot(  data = plot , aes(x=SNP ) ) + 
+(recessive = ggplot(  data = plot , aes(x=SNP , y=OR_REC, label=round(MAF,2)) ) + 
     scale_color_gradientn(colours = c(colours[4],"gray","gray"),
-                         values = scales::rescale(c(0,0.005,1)), breaks = c(0,1),
+                         values = scales::rescale(c(0,0.001,1)), breaks = c(0,1),
                          guide = "colorbar", limits=c(0,1),name = "BH-adjusted p value",)+
     geom_point( 
       # color="black", alpha=0.5,
@@ -159,6 +161,7 @@ plot[grep(x = plot$SNP, pattern = "rs3438"),]
           ymin = L95_REC,
           ymax = U95_REC#,col=P_REC
           )) +
+    ggrepel::geom_text_repel(size = 2,  show.legend = F, min.segment.length = 0)+
     geom_pointrange(
       color=colours[1], fill="white", alpha=0.5,
       aes(
@@ -167,14 +170,6 @@ plot[grep(x = plot$SNP, pattern = "rs3438"),]
         ymax = U95_ADD#,         col=OR_1_p
       )
     ) +
-    # geom_pointrange( 
-    #   color=colours[2], fill="white", alpha=0.5,
-    #   aes(
-    #     y=OR_DOM,
-    #     ymin = L95_DOM, 
-    #     ymax = U95_DOM#,         col=OR_1_p
-    #   )
-    # ) +
     ylab("log10(OR)")+ 
     xlab('')+
     scale_y_log10()+  
@@ -182,11 +177,11 @@ plot[grep(x = plot$SNP, pattern = "rs3438"),]
     coord_flip() +
     theme_bw()+
     theme(legend.position = "none",
-          axis.text.y = element_text(size = 6), 
-          title = element_text(size = 8)) + 
-    ylab("log-transformed OR (p<0.005 for recessive) for schizophrenia")+
-    labs(title =  paste0(condition, " ORs for enhancer-based SNPs."),
-         subtitle = "Green: recessive model. Red: additive model.\nSmall dots: closest PGC SNP - yellow if p<0.005"))
+          axis.text.y = element_text(size = 8), title = element_text(size = 8)
+    ) + 
+    ylab("log-transformed OR (p<0.001 for recessive) for schizophrenia")+
+    labs(title =  paste0("Schizophrenia ORs for enhancer-based SNPs."),
+         subtitle = "Green: recessive model. Red: additive model. Small dots: closest PGC SNP - yellow if p<0.001"))
 
 
 ggsave(
@@ -196,12 +191,12 @@ ggsave(
 
 
 #produce bed file for pipeline
-#make bed of unique coordinates
+#make bed
 results_per_snp3 %>% select(seqnames,  start,end, SNP) %>%
   mutate(score=".", strand=".") %>%
   dplyr::select(seqnames, start, end, SNP, score, strand) %>%
   distinct(.keep_all = TRUE) %>% 
-  data.table::fwrite(file=EPWAS_SNPs_filename, sep="\t", col.names=F)
+  data.table::fwrite(file="EP_WAS.bed", sep="\t", col.names=F)
 
 # produce file in HCM GWAS format
 #SNP     A1      A2      Z       N       FRQ     P       POS     CHR     BETA    SE
@@ -219,3 +214,5 @@ data.table::fread(PLINK_ORs_additive, na.strings = ".", header = T, col.names = 
   dplyr::mutate(BETA=log(OR), OR=NULL) %>% 
   dplyr::select(SNP,A1,A2,Z,N, P,POS,CHR,BETA,SE) %>% 
   data.table::fwrite(sep = "\t", file = "UKBB_ENH_associations_ADD.tsv.gz")
+ 
+ 
