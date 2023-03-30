@@ -89,7 +89,7 @@ workflow UKBB_OR_develop {
         R_extract_GWAS_SNPs_into_bed.out.clumped_GWAS_SNPs_plus_those_in_bed_files
             .combine(genotype_chr_files) //The combine operator combines (cartesian product) the items emitted by two channels
             
-    chromosomes_by_condition_plus_SNPs.view()
+    // chromosomes_by_condition_plus_SNPs.view()
 
     PLINK2_EXTRACT ( 
         // extract genotypes at bed file locations
@@ -171,17 +171,17 @@ workflow UKBB_OR_develop {
     PLINK_PRODUCE_QC_DATASET.out.all_chromosomes_QC.view()
 
 
-    // PLINK2_ASSOC_GLM(
-    //     PLINK_MERGE.out.all_chromosomes_extracted
-    //         //join will join all_chromosomes_extracted with the SNP list output from step 1 by condition (meta)
-    //         .combine(enhancer_lists_bed_files.map{it -> it[1]}),// ENH hg19 bed file
-    //     UKBB_covariates
-    //     //out tuple val(meta), path ("*_ORs_PLINK2_logistic_firth_fallback_covar_recessive.PHENO1.glm.logistic.hybrid"), path ("*_ORs_PLINK2_logistic_firth_fallback_covar_standard.PHENO1.glm.logistic.hybrid"), emit: associations
-    //     )
+    PLINK2_ASSOC_GLM(
+        PLINK_PRODUCE_QC_DATASET.out.all_chromosomes_QC
+            //join will join all_chromosomes_extracted with the SNP list output from step 1 by condition (meta)
+            .join(enhancer_lists_bed_files, by: [0]),// ENH hg19 bed file
+        UKBB_covariates
+        //out tuple val(meta), path ("*_ORs_PLINK2_logistic_firth_fallback_covar_recessive.PHENO1.glm.logistic.hybrid"), path ("*_ORs_PLINK2_logistic_firth_fallback_covar_standard.PHENO1.glm.logistic.hybrid"), emit: associations
+        )
     
-    // PLINK2_ASSOC_GLM.out.associations // ORs
-    //     .join(full_GWAS_hg19, by: [0]) //join full GWAS by condition
-    //     .view() 
+    PLINK2_ASSOC_GLM.out.associations // ORs
+        .join(full_GWAS_hg19, by: [0]) //join full GWAS by condition
+        .view() 
     
     
     // R_ANNOTATE_ORs(
