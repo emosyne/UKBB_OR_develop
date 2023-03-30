@@ -15,8 +15,8 @@ process R_prepare_lists_for_clump {
         val(EPWAS_model), path(ENH_EPwas)
 
     output:
-    tuple path(bed_QC),  path(bim_QC), path(fam_QC), val(ENH_list), path("*_noclump_EPWAS.tsv.gz"), path("*_noclump_residual_GWAS_compartment.tsv.gz"),  \
-        val(condition), val(EPWAS_model),  emit: lists_before_clump
+    tuple val(condition), path(bed_QC),  path(bim_QC), path(fam_QC), val(ENH_list), path("*_noclump_EPWAS.tsv.gz"), path("*_noclump_residual_GWAS_compartment.tsv.gz"),  \
+        val(EPWAS_model),  emit: lists_before_clump
 
     
     script:
