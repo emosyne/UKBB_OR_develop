@@ -198,16 +198,16 @@ workflow UKBB_OR_develop {
             .concat(R_ANNOTATE_ORs.out.EPWAS_HCM_format_ADD)
             .concat(R_ANNOTATE_ORs.out.EPWAS_HCM_format_DOM)
     
-    enhancer_EPWAS_files.view()
+    // enhancer_EPWAS_files.view()
     
     
-    // PLINK_PRODUCE_QC_DATASET.out.target_QC
-    //     .combine(enhancer_lists_bed_files.map{it -> it[1]})
-    //     .combine()
-    //     .map { it.flatten() }
-    //     .set{cohort_GWAS_enh_list}
+    PLINK_PRODUCE_QC_DATASET.out.target_QC
+        .combine(enhancer_lists_bed_files.map{it -> it[1]})
+        .combine(enhancer_EPWAS_files)
+        .map { it.flatten() }
+        .set{cohort_GWAS_enh_list}
     
-    // cohort_GWAS_enh_list.view()
+    cohort_GWAS_enh_list.view()
 
 
 //     // BASE subsetting
