@@ -68,7 +68,7 @@ process PLINK2_ASSOC_GLM {
         --covar ${UKBB_covariates} \\
         --out ${condition}_ORs_PLINK2_logistic_firth_fallback_covar_dominant
      plink \\
-            --bfile ${bedfilepath.baseName} \\
+            --bfile ${bed_QC.baseName} \\
             --extract ${condition}_ORs_PLINK2_logistic_firth_fallback_covar_dominant.snplist \\
             --freq \\
             --out ${condition}_ORs_PLINK2_logistic_firth_fallback_covar_dominant
