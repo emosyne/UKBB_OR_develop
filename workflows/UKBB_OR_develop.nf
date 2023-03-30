@@ -216,10 +216,11 @@ workflow UKBB_OR_develop {
         cohort_GWAS_enh_list
     )
     
-    
     R_prepare_lists_for_clump.out.lists_before_clump
         .join(LD_reference, by: [0])
+        .map{it.flatten()}
         .view()
+    // 
     
     // PLINK_clump (
     //     //CLUMPING of enhancer-based SNP compartments together 
