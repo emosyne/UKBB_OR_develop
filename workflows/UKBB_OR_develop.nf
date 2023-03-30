@@ -174,7 +174,7 @@ workflow UKBB_OR_develop {
     PLINK2_ASSOC_GLM(
         PLINK_PRODUCE_QC_DATASET.out.target_QC
             //join will join all_chromosomes_extracted with the SNP list output from step 1 by condition (meta)
-            .mix(enhancer_lists_bed_files.map{it -> it[1]}),// ENH hg19 bed file
+            .combine(enhancer_lists_bed_files.map{it -> it[1]}),// ENH hg19 bed file
         UKBB_covariates
         )
     
