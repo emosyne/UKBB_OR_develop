@@ -140,8 +140,8 @@ ggsave(
 
 
 (plot=merge %>%
-    dplyr::select(SNP, A1, TEST,OR, L95,U95,P, closest_PGC_OR, closest_PGC_P, closest_PGC_SNP) %>% 
-    pivot_wider(id_cols = c(SNP, A1,closest_PGC_OR, closest_PGC_P, closest_PGC_SNP), names_from = TEST, values_from = c(OR,L95,U95,P)) %>% 
+    dplyr::select(SNP, A1, TEST,OR, L95,U95,P, closest_PGC_OR, closest_PGC_P, closest_PGC_SNP, MAF) %>% 
+    pivot_wider(id_cols = c(SNP, A1,closest_PGC_OR, closest_PGC_P, closest_PGC_SNP, MAF), names_from = TEST, values_from = c(OR,L95,U95,P)) %>% 
     dplyr::filter((P_REC<0.001 )) %>%#| P_REC<0.001
     dplyr::mutate(SNP=factor(SNP), SNP = fct_reorder(SNP, OR_REC, .na_rm = T))
 )
