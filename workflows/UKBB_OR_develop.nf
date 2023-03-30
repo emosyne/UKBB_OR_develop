@@ -219,6 +219,7 @@ workflow UKBB_OR_develop {
     
     R_prepare_lists_for_clump.out.lists_before_clump
         .combine(LD_reference)
+        .map{it.flatten()}
         .view()
 
     
