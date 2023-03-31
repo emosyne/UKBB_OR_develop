@@ -92,7 +92,7 @@ plot[grep(x = plot$SNP, pattern = "rs3438"),]
 
 colours = values=MetBrewer::met.brewer("Austria", 4)
 
-(add_dominant = ggplot(  data = plot , aes(x=SNP , y=OR_DOM, label=round(MAF,2)) ) + 
+(add_dominant = ggplot(  data = plot , aes(x=SNP , y=OR_DOM, label=round(MAF,3)) ) + 
     scale_color_gradientn(colours = c(colours[4],"gray","gray"),
                           values = scales::rescale(c(0,0.001,1)), breaks = c(0,1),
                           guide = "colorbar", limits=c(0,1),name = "BH-adjusted p value",)+
@@ -146,7 +146,7 @@ ggsave(
     dplyr::mutate(SNP=factor(SNP), SNP = fct_reorder(SNP, OR_REC, .na_rm = T))
 )
 plot[grep(x = plot$SNP, pattern = "rs3438"),]
-(recessive = ggplot(  data = plot , aes(x=SNP , y=OR_REC, label=round(MAF,2)) ) + 
+(recessive = ggplot(  data = plot , aes(x=SNP , y=OR_REC, label=round(MAF,3)) ) + 
     scale_color_gradientn(colours = c(colours[4],"gray","gray"),
                          values = scales::rescale(c(0,0.001,1)), breaks = c(0,1),
                          guide = "colorbar", limits=c(0,1),name = "BH-adjusted p value",)+
