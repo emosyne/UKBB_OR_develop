@@ -269,7 +269,6 @@ workflow UKBB_OR_develop {
     PRS_results = 
         PRSice_calculate_PRS_split_partitions.out.clumped_EPWAS_PRS
             .join(PRSice_calculate_PRS_split_partitions.out.clumped_residual_GWAS_compartment_PRS)
-            .join(PRSice_calculate_PRS_split_partitions.out.clumped_merged_GWAS_PRS)
             .join(PRSice_calculate_PRS_split_partitions.out.clumped_original_GWAS_PRS)
             .map { [it, "enh_ES", "enh_TS_tpm"].flatten() }
 
