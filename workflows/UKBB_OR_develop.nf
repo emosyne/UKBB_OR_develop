@@ -262,8 +262,7 @@ workflow UKBB_OR_develop {
     // [SCZ_ALLCHR_SCZ_QC.bed, SCZ_ALLCHR_SCZ_QC.bim, SCZ_ALLCHR_SCZ_QC.fam, Neural_significant_enh, Neural_significant_enh_ADD_SCZ_X_1_clumped_EPWAS.tsv.gz, Neural_significant_enh_ADD_SCZ_clumped_residual_GWAS_compartment.tsv.gz, 1, SCZ, ADD, SCZ_clumped_GWAS_QC_nodups.tsv.gz, /rds/general/ephemeral/user/eosimo/ephemeral/UKBB_OR_develop/input/biobank/non_missing_10PCs_Jun22.covariate.gz, 0.5]
     
     PRSice_calculate_PRS_split_partitions(
-        combined_splitlists_bedfile_QCeddata_LDdata,
-        LD_reference
+        combined_splitlists_bedfile_QCeddata_LDdata
     )
     
     // ########################################### SET NAMES OF MULTIPLIERS ###########################################
