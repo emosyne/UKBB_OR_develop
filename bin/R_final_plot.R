@@ -645,7 +645,7 @@ fig3_grob= arrangeGrob(
 ggsave(
   filename = paste0(OUTPUT_prefix, ENH_list, "_", Sys.Date(),"_CoD_original_vs_partitioned_models.pdf"), 
   fig3_grob,  
-  width = 10, height = 5, device = "pdf", scale = 1.5)
+  width = 10, height = 4, device = "pdf", scale = 1.5)
 
 
 
