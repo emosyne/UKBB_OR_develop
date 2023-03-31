@@ -18,7 +18,7 @@ process PRSice_calculate_PRS_split_partitions2 {
     tuple path(cohort_bed_QC),  path(cohort_bim_QC), path(cohort_fam_QC), val(ENH_list), \
         path(clumped_EPWAS), path(clumped_residual_GWAS_compartment), val(multiplier), val(condition),  val(EPWAS_model), \
         path(clumped_GWAS_QC_nodups), path(UKBB_covariates), \
-        val(condition), path(LD_ref_bed), path(LD_ref_bim), path(LD_ref_fam)\
+        val(condition), path(LD_ref_bed), path(LD_ref_bim), path(LD_ref_fam),\
         val(CTthreshold)
     
     output:
