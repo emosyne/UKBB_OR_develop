@@ -10,14 +10,13 @@ process PRSice_calculate_PRS_split_partitions {
 
 
     input:
-    // [GWAS_ENH_SNPs_hg19_ALLCHR_SCZ_QC.bed, GWAS_ENH_SNPs_hg19_ALLCHR_SCZ_QC.bim, GWAS_ENH_SNPs_hg19_ALLCHR_SCZ_QC.fam, Neural_significant_enh, \
-        // Neural_significant_enh_REC_SCZ_X_1_clumped_EPWAS.tsv.gz, Neural_significant_enh_REC_SCZ_clumped_residual_GWAS_compartment.tsv.gz, 1, SCZ, REC, 
-        // SCZ_clumped_GWAS_QC_nodups.tsv.gz, non_missing_10PCs_Jun22.covariate.gz, EUR_phase3_autosomes_hg19.bed, EUR_phase3_autosomes_hg19.bim, EUR_phase3_autosomes_hg19.fam, 0.5]
+    // [SCZ_ALLCHR_SCZ_QC.bed, SCZ_ALLCHR_SCZ_QC.bim, SCZ_ALLCHR_SCZ_QC.fam, Neural_significant_enh,
+        // Neural_significant_enh_ADD_SCZ_X_1_clumped_EPWAS.tsv.gz, Neural_significant_enh_ADD_SCZ_clumped_residual_GWAS_compartment.tsv.gz, 1, SCZ, ADD, 
+        // SCZ_clumped_GWAS_QC_nodups.tsv.gz, /rds/general/ephemeral/user/eosimo/ephemeral/UKBB_OR_develop/input/biobank/non_missing_10PCs_Jun22.covariate.gz, 0.05]
     tuple path(cohort_bed_QC),  path(cohort_bim_QC), path(cohort_fam_QC), val(ENH_list), \
         path(clumped_EPWAS), path(clumped_residual_GWAS_compartment), val(multiplier), val(condition),  val(EPWAS_model), \
-        path(clumped_GWAS_QC_nodups), \
-        path(UKBB_covariates), \
-        path(LD_ref_bed), path(LD_ref_bim), path(LD_ref_fam), val(CTthreshold)
+        path(clumped_GWAS_QC_nodups), path(UKBB_covariates), val(CTthreshold)
+    tuple val(condition), path(LD_ref_bed), path(LD_ref_bim), path(LD_ref_fam)
     
     output:
     tuple val("${ENH_list}_${CTthreshold}_${EPWAS_model}"), path("*_clumped_EPWAS_*.summary"), path("*_clumped_EPWAS_*.prsice"), path("*_clumped_EPWAS_*.best"), \
