@@ -1,4 +1,4 @@
-process PRSice_calculate_PRS_split_partitions {
+process PRSice_calculate_PRS_split_partitions2 {
     // debug true
     tag "${ENH_list}_${CTthreshold}_${EPWAS_model}"
     label 'process_high_resource_short'
