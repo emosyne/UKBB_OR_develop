@@ -273,12 +273,12 @@ workflow UKBB_OR_develop {
             .map { [it, "enh_ES", "enh_TS_tpm"].flatten() }
 
 
-    PRS_results.view()
-    
+    // PRS_results.view()
+    // [Neural_significant_enh_0.5_DOM, /rds/general/ephemeral/user/eosimo/ephemeral/UKBB_OR_develop/work/d5/018b4b9e78cd9a5873fda0ce593913/SCZ_Neural_significant_enh_0.5_DOM_clumped_EPWAS_originalOR.summary, /rds/general/ephemeral/user/eosimo/ephemeral/UKBB_OR_develop/work/d5/018b4b9e78cd9a5873fda0ce593913/SCZ_Neural_significant_enh_0.5_DOM_mult_1_clumped_EPWAS_OR_by_measure1.summary, /rds/general/ephemeral/user/eosimo/ephemeral/UKBB_OR_develop/work/d5/018b4b9e78cd9a5873fda0ce593913/SCZ_Neural_significant_enh_0.5_DOM_mult_1_clumped_EPWAS_OR_by_measure2.summary, /rds/general/ephemeral/user/eosimo/ephemeral/UKBB_OR_develop/work/d5/018b4b9e78cd9a5873fda0ce593913/SCZ_Neural_significant_enh_0.5_DOM_clumped_EPWAS_originalOR.prsice, /rds/general/ephemeral/user/eosimo/ephemeral/UKBB_OR_develop/work/d5/018b4b9e78cd9a5873fda0ce593913/SCZ_Neural_significant_enh_0.5_DOM_mult_1_clumped_EPWAS_OR_by_measure1.prsice, /rds/general/ephemeral/user/eosimo/ephemeral/UKBB_OR_develop/work/d5/018b4b9e78cd9a5873fda0ce593913/SCZ_Neural_significant_enh_0.5_DOM_mult_1_clumped_EPWAS_OR_by_measure2.prsice,/rds/general/ephemeral/user/eosimo/ephemeral/UKBB_OR_develop/work/d5/018b4b9e78cd9a5873fda0ce593913/SCZ_Neural_significant_enh_0.5_DOM_clumped_EPWAS_originalOR.best, /rds/general/ephemeral/user/eosimo/ephemeral/UKBB_OR_develop/work/d5/018b4b9e78cd9a5873fda0ce593913/SCZ_Neural_significant_enh_0.5_DOM_mult_1_clumped_EPWAS_OR_by_measure1.best, /rds/general/ephemeral/user/eosimo/ephemeral/UKBB_OR_develop/work/d5/018b4b9e78cd9a5873fda0ce593913/SCZ_Neural_significant_enh_0.5_DOM_mult_1_clumped_EPWAS_OR_by_measure2.best, /rds/general/ephemeral/user/eosimo/ephemeral/UKBB_OR_develop/work/d5/018b4b9e78cd9a5873fda0ce593913/SCZ_Neural_significant_enh_0.5_DOM_clumped_residual_GWAS_compartment.summary, /rds/general/ephemeral/user/eosimo/ephemeral/UKBB_OR_develop/work/d5/018b4b9e78cd9a5873fda0ce593913/SCZ_Neural_significant_enh_0.5_DOM_clumped_residual_GWAS_compartment.prsice, /rds/general/ephemeral/user/eosimo/ephemeral/UKBB_OR_develop/work/d5/018b4b9e78cd9a5873fda0ce593913/SCZ_Neural_significant_enh_0.5_DOM_clumped_residual_GWAS_compartment.best, /rds/general/ephemeral/user/eosimo/ephemeral/UKBB_OR_develop/work/d5/018b4b9e78cd9a5873fda0ce593913/SCZ_Neural_significant_enh_original_GWAS.summary, /rds/general/ephemeral/user/eosimo/ephemeral/UKBB_OR_develop/work/d5/018b4b9e78cd9a5873fda0ce593913/SCZ_Neural_significant_enh_original_GWAS.prsice, /rds/general/ephemeral/user/eosimo/ephemeral/UKBB_OR_develop/work/d5/018b4b9e78cd9a5873fda0ce593913/SCZ_Neural_significant_enh_original_GWAS.best,Neural_significant_enh, 0.5, SCZ, /rds/general/ephemeral/user/eosimo/ephemeral/UKBB_OR_develop/work/d5/018b4b9e78cd9a5873fda0ce593913/SCZ_ALLCHR_SCZ_QC.fam, DOM, enh_ES, enh_TS_tpm]
 
-// //     R_final_plot (
-// //         PRS_results
-// //     )
+    R_final_plot (
+        PRS_results
+    )
 
 
 }
