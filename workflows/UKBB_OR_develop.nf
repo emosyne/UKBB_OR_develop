@@ -15,22 +15,14 @@ include { R_final_plot }                    from '../modules/local/R_final_plot_
 
 
 
-
-
 full_GWAS_hg19 = Channel
     .fromPath("$GWAS_dir/PGC3_SCZ_wave3.european.autosome.public.v3_overInfo.8_OR.tsv.gz", checkIfExists: true) 
     .map{it-> ["SCZ", it]}
 
-dx_UKBB_pheno =    Channel.fromPath("./input/biobank/SCZ.pheno", checkIfExists: true).map{it-> ["SCZ", it]}
+dx_UKBB_pheno =    Channel.fromPath("../private_input_files/biobank/SCZ.pheno", checkIfExists: true).map{it-> ["SCZ", it]}
 
 
 
-// // chain file
-// hg38ToHg19_chain = Channel
-//     .fromPath( "./input/chainfiles/hg38ToHg19.over.chain", checkIfExists: true)
-// //LD blocks 1000 genomes
-// GW_LD_blocks = Channel
-//     .fromPath( "./input/LD/EUR_phase3_autosomes_hg19.blocks.det.gz", checkIfExists: true)
 
 // #### UKBB PLINK input files ####
 genotype_chr_files = Channel
@@ -39,9 +31,9 @@ genotype_chr_files = Channel
 
 
 
-UKBBethinicityRelatedness = Channel.fromPath( './input/biobank/EIDs_nonBritIrish_includingsecondary_or_related_over_king125.tsv' , checkIfExists: true)
-UKBB_covariates = Channel.fromPath( './input/biobank/non_missing_10PCs_Jun22.covariate.gz', checkIfExists: true)
-UKBB_rs34380086_cases = Channel.fromPath( './input/biobank/rs34380086_cases.pheno', checkIfExists: true)
+UKBBethinicityRelatedness = Channel.fromPath( '../private_input_files/biobank/EIDs_nonBritIrish_includingsecondary_or_related_over_king125.tsv' , checkIfExists: true)
+UKBB_covariates = Channel.fromPath( '../private_input_files/biobank/non_missing_10PCs_Jun22.covariate.gz', checkIfExists: true)
+UKBB_rs34380086_cases = Channel.fromPath( '../private_input_files/biobank/rs34380086_cases.pheno', checkIfExists: true)
 
 
 //LD ref
@@ -60,7 +52,7 @@ enhancer_lists_bed_files =
             .map { ENH_list -> ["${ENH_list}", 
                 file("./input/validation/enhancer_files/${ENH_list}.bed", checkIfExists: true)]
             } 
-annotations = Channel.fromPath( "./input/ES_multipliers/2023-01-18_2023-02-17_NEURAL_ENH_EXP_significant_plus_100_noOverlap_HCMformat.csv.gz", checkIfExists: true)
+annotations = Channel.fromPath( "../private_input_files/ES_multipliers/2023-01-18_2023-02-17_NEURAL_ENH_EXP_significant_plus_100_noOverlap_HCMformat.csv.gz", checkIfExists: true)
 
 
 workflow UKBB_OR_develop {
@@ -97,7 +89,6 @@ workflow UKBB_OR_develop {
         )
     
     // PLINK2_EXTRACT.out.SNPextracted_by_chromosome.view()
-    // [SCZ, GWAS_SCZ_SNV_merge_hg19_ukb22828_c17_b0_v3.bim, GWAS_SCZ_SNV_merge_hg19_ukb22828_c17_b0_v3.bed, GWAS_SCZ_SNV_merge_hg19_ukb22828_c17_b0_v3.fam, GWAS_SCZ_SNV_merge_hg19_ukb22828_c17_b0_v3.log]
 
     PLINK2_EXTRACT.out.SNPextracted_by_chromosome
         .branch{
@@ -154,7 +145,6 @@ workflow UKBB_OR_develop {
              .join(PLINK_base_GWAS_QC_and_clump.out.GWAS_QC_noClump)
     )
     // R_PRS_QC.out.QC_het_a1_mismatch.view()
-    //[SCZ, /rds/general/ephemeral/user/eosimo/ephemeral/UKBB_OR_develop/work/da/7f6f852e60e9d996747fda3f1d5aa1/SCZ_ALLCHR.bed, /rds/general/ephemeral/user/eosimo/ephemeral/UKBB_OR_develop/work/da/7f6f852e60e9d996747fda3f1d5aa1/SCZ_ALLCHR.bim, /rds/general/ephemeral/user/eosimo/ephemeral/UKBB_OR_develop/work/da/7f6f852e60e9d996747fda3f1d5aa1/SCZ_ALLCHR.fam, /rds/general/ephemeral/user/eosimo/ephemeral/UKBB_OR_develop/work/da/7f6f852e60e9d996747fda3f1d5aa1/SCZ_GWAS_QC_nodups.tsv.gz, /rds/general/ephemeral/user/eosimo/ephemeral/UKBB_OR_develop/work/da/7f6f852e60e9d996747fda3f1d5aa1/SCZ_het_valid_out_vs_GWAS.sample, /rds/general/ephemeral/user/eosimo/ephemeral/UKBB_OR_develop/work/da/7f6f852e60e9d996747fda3f1d5aa1/SCZ_a1_cohort_bim_vs_GWAS, /rds/general/ephemeral/user/eosimo/ephemeral/UKBB_OR_develop/work/da/7f6f852e60e9d996747fda3f1d5aa1/SCZ_mismatching_SNPs_vs_GWAS]
 
     // TARGET QC 3:  
     // Remove individuals with heterozigosity F coefficients that are more than 3 standard deviation (SD) units from the mean
@@ -167,7 +157,6 @@ workflow UKBB_OR_develop {
     // PLINK_PRODUCE_QC_DATASET.out.target_QC
     //         .combine(enhancer_lists_bed_files.map{it -> it[1]})
     //         .view()
-    // [SCZ, /rds/general/ephemeral/user/eosimo/ephemeral/UKBB_OR_develop/work/d7/d302e50863cd085dbe4f45b217ae25/SCZ_ALLCHR_SCZ_QC.bed, /rds/general/ephemeral/user/eosimo/ephemeral/UKBB_OR_develop/work/d7/d302e50863cd085dbe4f45b217ae25/SCZ_ALLCHR_SCZ_QC.bim, /rds/general/ephemeral/user/eosimo/ephemeral/UKBB_OR_develop/work/d7/d302e50863cd085dbe4f45b217ae25/SCZ_ALLCHR_SCZ_QC.fam, /rds/general/ephemeral/user/eosimo/ephemeral/UKBB_OR_develop/work/d7/d302e50863cd085dbe4f45b217ae25/SCZ_GWAS_QC_nodups.tsv.gz, /rds/general/ephemeral/user/eosimo/ephemeral/UKBB_OR_develop/input/validation/enhancer_files/Neural_significant_enh.bed]
 
     PLINK2_ASSOC_GLM(
         PLINK_PRODUCE_QC_DATASET.out.target_QC
@@ -178,7 +167,6 @@ workflow UKBB_OR_develop {
     // PLINK2_ASSOC_GLM.out.associations // ORs
     //     .join(full_GWAS_hg19, by: [0]) //join full GWAS by condition
     //     .view() 
-    // /[SCZ, /rds/general/ephemeral/user/eosimo/ephemeral/UKBB_OR_develop/work/0b/5bf167f5ec07a5519081d3a4d1847a/SCZ_ORs_PLINK2_logistic_firth_fallback_covar_recessive.PHENO1.glm.logistic.hybrid, /rds/general/ephemeral/user/eosimo/ephemeral/UKBB_OR_develop/work/0b/5bf167f5ec07a5519081d3a4d1847a/SCZ_ORs_PLINK2_logistic_firth_fallback_covar_standard.PHENO1.glm.logistic.hybrid, /rds/general/ephemeral/user/eosimo/ephemeral/UKBB_OR_develop/work/0b/5bf167f5ec07a5519081d3a4d1847a/SCZ_ORs_PLINK2_logistic_firth_fallback_covar_dominant.PHENO1.glm.logistic.hybrid, /rds/general/ephemeral/user/eosimo/ephemeral/UKBB_OR_develop/work/0b/5bf167f5ec07a5519081d3a4d1847a/SCZ_ORs_PLINK2_logistic_firth_fallback_covar_recessive.frq, /rds/general/user/eosimo/home/largedirs/scz_GWAS/PGC3_SCZ_wave3.european.autosome.public.v3_overInfo.8_OR.tsv.gz]
     
     R_ANNOTATE_ORs(
         // annotate ORs from previous step with GWAS results and other info,
@@ -207,9 +195,6 @@ workflow UKBB_OR_develop {
         .set{cohort_GWAS_enh_list}
     
     // cohort_GWAS_enh_list.view()
-    // [SCZ, /rds/general/ephemeral/user/eosimo/ephemeral/UKBB_OR_develop/work/d7/d302e50863cd085dbe4f45b217ae25/SCZ_ALLCHR_SCZ_QC.bed, /rds/general/ephemeral/user/eosimo/ephemeral/UKBB_OR_develop/work/d7/d302e50863cd085dbe4f45b217ae25/SCZ_ALLCHR_SCZ_QC.bim, /rds/general/ephemeral/user/eosimo/ephemeral/UKBB_OR_develop/work/d7/d302e50863cd085dbe4f45b217ae25/SCZ_ALLCHR_SCZ_QC.fam, /rds/general/ephemeral/user/eosimo/ephemeral/UKBB_OR_develop/work/d7/d302e50863cd085dbe4f45b217ae25/SCZ_GWAS_QC_nodups.tsv.gz, Neural_significant_enh, /rds/general/ephemeral/user/eosimo/ephemeral/UKBB_OR_develop/input/validation/enhancer_files/Neural_significant_enh.bed, REC, /rds/general/ephemeral/user/eosimo/ephemeral/UKBB_OR_develop/work/29/55fbfe539be2822470efedd01e1707/UKBB_ENH_associations_REC.tsv.gz]
-    // [SCZ, /rds/general/ephemeral/user/eosimo/ephemeral/UKBB_OR_develop/work/d7/d302e50863cd085dbe4f45b217ae25/SCZ_ALLCHR_SCZ_QC.bed, /rds/general/ephemeral/user/eosimo/ephemeral/UKBB_OR_develop/work/d7/d302e50863cd085dbe4f45b217ae25/SCZ_ALLCHR_SCZ_QC.bim, /rds/general/ephemeral/user/eosimo/ephemeral/UKBB_OR_develop/work/d7/d302e50863cd085dbe4f45b217ae25/SCZ_ALLCHR_SCZ_QC.fam, /rds/general/ephemeral/user/eosimo/ephemeral/UKBB_OR_develop/work/d7/d302e50863cd085dbe4f45b217ae25/SCZ_GWAS_QC_nodups.tsv.gz, Neural_significant_enh, /rds/general/ephemeral/user/eosimo/ephemeral/UKBB_OR_develop/input/validation/enhancer_files/Neural_significant_enh.bed, ADD, /rds/general/ephemeral/user/eosimo/ephemeral/UKBB_OR_develop/work/29/55fbfe539be2822470efedd01e1707/UKBB_ENH_associations_ADD.tsv.gz]
-    // [SCZ, /rds/general/ephemeral/user/eosimo/ephemeral/UKBB_OR_develop/work/d7/d302e50863cd085dbe4f45b217ae25/SCZ_ALLCHR_SCZ_QC.bed, /rds/general/ephemeral/user/eosimo/ephemeral/UKBB_OR_develop/work/d7/d302e50863cd085dbe4f45b217ae25/SCZ_ALLCHR_SCZ_QC.bim, /rds/general/ephemeral/user/eosimo/ephemeral/UKBB_OR_develop/work/d7/d302e50863cd085dbe4f45b217ae25/SCZ_ALLCHR_SCZ_QC.fam, /rds/general/ephemeral/user/eosimo/ephemeral/UKBB_OR_develop/work/d7/d302e50863cd085dbe4f45b217ae25/SCZ_GWAS_QC_nodups.tsv.gz, Neural_significant_enh, /rds/general/ephemeral/user/eosimo/ephemeral/UKBB_OR_develop/input/validation/enhancer_files/Neural_significant_enh.bed, DOM, /rds/general/ephemeral/user/eosimo/ephemeral/UKBB_OR_develop/work/29/55fbfe539be2822470efedd01e1707/UKBB_ENH_associations_DOM.tsv.gz]
 
     // BASE subsetting
     R_prepare_lists_for_clump (
@@ -222,7 +207,6 @@ workflow UKBB_OR_develop {
     //     .combine(LD_reference, by: [0])
     //     .map{it.flatten()}
     //     .view()
-    // [SCZ, /rds/general/ephemeral/user/eosimo/ephemeral/UKBB_OR_develop/work/da/0411b350336a0cc11bd6e843d4d59e/SCZ_ALLCHR_SCZ_QC.bed, /rds/general/ephemeral/user/eosimo/ephemeral/UKBB_OR_develop/work/da/0411b350336a0cc11bd6e843d4d59e/SCZ_ALLCHR_SCZ_QC.bim, /rds/general/ephemeral/user/eosimo/ephemeral/UKBB_OR_develop/work/da/0411b350336a0cc11bd6e843d4d59e/SCZ_ALLCHR_SCZ_QC.fam, Neural_significant_enh, /rds/general/ephemeral/user/eosimo/ephemeral/UKBB_OR_develop/work/da/0411b350336a0cc11bd6e843d4d59e/SCZ_ADD_Neural_significant_enh_noclump_EPWAS.tsv.gz, /rds/general/ephemeral/user/eosimo/ephemeral/UKBB_OR_develop/work/da/0411b350336a0cc11bd6e843d4d59e/SCZ_ADD_Neural_significant_enh_noclump_residual_GWAS_compartment.tsv.gz, ADD, /rds/general/user/eosimo/home/lenhard_prs/LD_ref/EUR_phase3_autosomes_hg19.bed, /rds/general/user/eosimo/home/lenhard_prs/LD_ref/EUR_phase3_autosomes_hg19.bim, /rds/general/user/eosimo/home/lenhard_prs/LD_ref/EUR_phase3_autosomes_hg19.fam]
     
     PLINK_clump (
         //CLUMPING of enhancer-based SNP compartments together 
@@ -231,7 +215,6 @@ workflow UKBB_OR_develop {
             .map{it.flatten()}
     )
     // PLINK_clump.out.clumped_SNPs_and_noclump_lists.view()
-    // [/rds/general/ephemeral/user/eosimo/ephemeral/UKBB_OR_develop/work/44/54ade213669dde5774acd17012e2a9/SCZ_ALLCHR_SCZ_QC.bed, /rds/general/ephemeral/user/eosimo/ephemeral/UKBB_OR_develop/work/44/54ade213669dde5774acd17012e2a9/SCZ_ALLCHR_SCZ_QC.bim, /rds/general/ephemeral/user/eosimo/ephemeral/UKBB_OR_develop/work/44/54ade213669dde5774acd17012e2a9/SCZ_ALLCHR_SCZ_QC.fam, Neural_significant_enh, /rds/general/ephemeral/user/eosimo/ephemeral/UKBB_OR_develop/work/44/54ade213669dde5774acd17012e2a9/SCZ_REC_Neural_significant_enh_noclump_EPWAS.tsv.gz, /rds/general/ephemeral/user/eosimo/ephemeral/UKBB_OR_develop/work/44/54ade213669dde5774acd17012e2a9/SCZ_REC_Neural_significant_enh_noclump_residual_GWAS_compartment.tsv.gz, /rds/general/ephemeral/user/eosimo/ephemeral/UKBB_OR_develop/work/44/54ade213669dde5774acd17012e2a9/SCZ_Neural_significant_enh_clumped_SNPs.clumped, SCZ, REC]
     
 
     R_split_lists (
@@ -259,7 +242,6 @@ workflow UKBB_OR_develop {
     
     combined_splitlists_bedfile_QCeddata_LDdata = combined_splitlists_bedfile_QCeddata_LDdata_05.mix(combined_splitlists_bedfile_QCeddata_LDdata_005)
     // combined_splitlists_bedfile_QCeddata_LDdata.first().view()
-    // [SCZ_ALLCHR_SCZ_QC.bed, SCZ_ALLCHR_SCZ_QC.bim, SCZ_ALLCHR_SCZ_QC.fam, Neural_significant_enh, Neural_significant_enh_ADD_SCZ_X_1_clumped_EPWAS.tsv.gz, Neural_significant_enh_ADD_SCZ_clumped_residual_GWAS_compartment.tsv.gz, 1, SCZ, ADD, SCZ_clumped_GWAS_QC_nodups.tsv.gz, /rds/general/ephemeral/user/eosimo/ephemeral/UKBB_OR_develop/input/biobank/non_missing_10PCs_Jun22.covariate.gz, 0.5]
     
     PRSice_calculate_PRS_split_partitions(
         combined_splitlists_bedfile_QCeddata_LDdata
@@ -274,7 +256,6 @@ workflow UKBB_OR_develop {
 
 
     // PRS_results.view()
-    // [Neural_significant_enh_0.5_DOM, /rds/general/ephemeral/user/eosimo/ephemeral/UKBB_OR_develop/work/d5/018b4b9e78cd9a5873fda0ce593913/SCZ_Neural_significant_enh_0.5_DOM_clumped_EPWAS_originalOR.summary, /rds/general/ephemeral/user/eosimo/ephemeral/UKBB_OR_develop/work/d5/018b4b9e78cd9a5873fda0ce593913/SCZ_Neural_significant_enh_0.5_DOM_mult_1_clumped_EPWAS_OR_by_measure1.summary, /rds/general/ephemeral/user/eosimo/ephemeral/UKBB_OR_develop/work/d5/018b4b9e78cd9a5873fda0ce593913/SCZ_Neural_significant_enh_0.5_DOM_mult_1_clumped_EPWAS_OR_by_measure2.summary, /rds/general/ephemeral/user/eosimo/ephemeral/UKBB_OR_develop/work/d5/018b4b9e78cd9a5873fda0ce593913/SCZ_Neural_significant_enh_0.5_DOM_clumped_EPWAS_originalOR.prsice, /rds/general/ephemeral/user/eosimo/ephemeral/UKBB_OR_develop/work/d5/018b4b9e78cd9a5873fda0ce593913/SCZ_Neural_significant_enh_0.5_DOM_mult_1_clumped_EPWAS_OR_by_measure1.prsice, /rds/general/ephemeral/user/eosimo/ephemeral/UKBB_OR_develop/work/d5/018b4b9e78cd9a5873fda0ce593913/SCZ_Neural_significant_enh_0.5_DOM_mult_1_clumped_EPWAS_OR_by_measure2.prsice,/rds/general/ephemeral/user/eosimo/ephemeral/UKBB_OR_develop/work/d5/018b4b9e78cd9a5873fda0ce593913/SCZ_Neural_significant_enh_0.5_DOM_clumped_EPWAS_originalOR.best, /rds/general/ephemeral/user/eosimo/ephemeral/UKBB_OR_develop/work/d5/018b4b9e78cd9a5873fda0ce593913/SCZ_Neural_significant_enh_0.5_DOM_mult_1_clumped_EPWAS_OR_by_measure1.best, /rds/general/ephemeral/user/eosimo/ephemeral/UKBB_OR_develop/work/d5/018b4b9e78cd9a5873fda0ce593913/SCZ_Neural_significant_enh_0.5_DOM_mult_1_clumped_EPWAS_OR_by_measure2.best, /rds/general/ephemeral/user/eosimo/ephemeral/UKBB_OR_develop/work/d5/018b4b9e78cd9a5873fda0ce593913/SCZ_Neural_significant_enh_0.5_DOM_clumped_residual_GWAS_compartment.summary, /rds/general/ephemeral/user/eosimo/ephemeral/UKBB_OR_develop/work/d5/018b4b9e78cd9a5873fda0ce593913/SCZ_Neural_significant_enh_0.5_DOM_clumped_residual_GWAS_compartment.prsice, /rds/general/ephemeral/user/eosimo/ephemeral/UKBB_OR_develop/work/d5/018b4b9e78cd9a5873fda0ce593913/SCZ_Neural_significant_enh_0.5_DOM_clumped_residual_GWAS_compartment.best, /rds/general/ephemeral/user/eosimo/ephemeral/UKBB_OR_develop/work/d5/018b4b9e78cd9a5873fda0ce593913/SCZ_Neural_significant_enh_original_GWAS.summary, /rds/general/ephemeral/user/eosimo/ephemeral/UKBB_OR_develop/work/d5/018b4b9e78cd9a5873fda0ce593913/SCZ_Neural_significant_enh_original_GWAS.prsice, /rds/general/ephemeral/user/eosimo/ephemeral/UKBB_OR_develop/work/d5/018b4b9e78cd9a5873fda0ce593913/SCZ_Neural_significant_enh_original_GWAS.best,Neural_significant_enh, 0.5, SCZ, /rds/general/ephemeral/user/eosimo/ephemeral/UKBB_OR_develop/work/d5/018b4b9e78cd9a5873fda0ce593913/SCZ_ALLCHR_SCZ_QC.fam, DOM, enh_ES, enh_TS_tpm]
 
     R_final_plot (
         PRS_results
